@@ -399,7 +399,7 @@ ${CASA_FREE_SERVICE_LINE}
     if (!list) return;
 
     const idx = getRoomCount() + 1;
-    const name = defaultName || (idx === 1 ? "작은방" : idx === 2 ? "안방" : "아이방");
+    const name = defaultName || (idx === 1 ? "작은방" : idx === 2 ? "큰방" : "안방");
     list.appendChild(makeRoomRow({ name, qty: "" }));
 
     renderRoomAddButton();
