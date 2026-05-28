@@ -178,7 +178,7 @@
             <button type="button" class="secondary" id="btnAddRoom" style="padding:8px 10px; border-radius:10px;" disabled>
               + 방 추가
             </button>
-            <span class="sub" id="roomsHint">※ 최대 3개까지 추가 가능</span>
+            <span class="sub" id="roomsHint">※ 최대 4개까지 추가 가능</span>
           </div>
 
           <div id="roomsList" style="margin-top:10px; display:grid; gap:8px;"></div>
@@ -347,7 +347,7 @@ ${CASA_FREE_SERVICE_LINE}
   // =========================
   // ✅ 방(여러개) 관리
   // =========================
-  const MAX_ROOMS = 3;
+  const MAX_ROOMS = 4;
 
   function roomsEnabled() {
     return $("optRooms")?.checked === true;
