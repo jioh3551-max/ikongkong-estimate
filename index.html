@@ -5,7 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>견적 템플릿 (아이콩콩 ↔ 까사플로아)</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif; margin: 0; background:#f6f7f9; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+      margin: 0;
+      background:#edf7ff;
+      transition: background-color .25s ease;
+    }
+    body.template-ikong { background:#edf7ff; }
+    body.template-casa { background:#f5efff; }
     .wrap { max-width: 920px; margin: 0 auto; padding: 16px; }
     .card { background:#fff; border-radius: 14px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); margin-bottom: 12px; }
     h1 { font-size: 18px; margin: 0 0 10px; }
@@ -76,7 +83,7 @@
     select { min-height: 40px; }
   </style>
 </head>
-<body>
+<body class="template-ikong">
   <div class="wrap">
 
     <div class="card">
@@ -731,6 +738,8 @@ ${noticeBody}`.trim();
     $("btnTplIkong").classList.toggle("active", isIkong);
     $("btnTplCasa").classList.toggle("active", !isIkong);
     $("tplLabel").textContent = isIkong ? "아이콩콩" : "까사플로아";
+    document.body.classList.toggle("template-ikong", isIkong);
+    document.body.classList.toggle("template-casa", !isIkong);
 
     updateIkongModeUI();
     generate();
