@@ -185,7 +185,7 @@
             <button type="button" class="secondary" id="btnAddRoom" style="padding:8px 10px; border-radius:10px;" disabled>
               + 방 추가
             </button>
-            <span class="sub" id="roomsHint">※ 최대 3개까지 추가 가능</span>
+            <span class="sub" id="roomsHint">※ 최대 4개까지 추가 가능</span>
           </div>
 
           <div id="roomsList" style="margin-top:10px; display:grid; gap:8px;"></div>
@@ -251,6 +251,11 @@ A/S가 적용되지 않는 상품입니다`;
     { label: "👉프리미엄1200(리퍼브)", size: "120cmx120cmx2.4cm", regularPrice: 104000, eventPrice:  102000 },
     { label: "👉스킨퓨어1200(리퍼브)", size: "120cmx120cmx2.4cm", regularPrice: 114000, eventPrice: 111000 },
   ];
+
+  const IKONG_INTRO =
+`💎아이콩콩매트는 독일 3사로 불리는 벤츠, 아우디, BMW 등에 최고급 원료를 납품하는 국내 원료사의 프리미엄 소재를 공급받아 생산된 층간소음매트입니다.
+
+일반적인 매트와 달리 원료 단계부터 차별화된 품질을 적용하여, 탄탄한 내구성은 물론 생활 속에서 오래 사용할 수 있는 안정성과 완성도를 높인 프리미엄 시공매트입니다.`;
 
   const IKONG_FOOTER =
 `💬공간 2곳 이상시 전문시공비/출장비는 0원으로 무상제공됩니다. 거실만 시공시에는 별도 출장비 100,000원 발생되는점 참조부탁드립니다.
@@ -354,7 +359,7 @@ ${CASA_FREE_SERVICE_LINE}
   // =========================
   // ✅ 방(여러개) 관리
   // =========================
-  const MAX_ROOMS = 3;
+  const MAX_ROOMS = 4;
 
   function roomsEnabled() {
     return $("optRooms")?.checked === true;
@@ -406,7 +411,7 @@ ${CASA_FREE_SERVICE_LINE}
     if (!list) return;
 
     const idx = getRoomCount() + 1;
-    const name = defaultName || (idx === 1 ? "작은방" : idx === 2 ? "안방" : "아이방");
+    const name = defaultName || (idx === 1 ? "작은방" : idx === 2 ? "큰방" : "안방");
     list.appendChild(makeRoomRow({ name, qty: "" }));
 
     renderRoomAddButton();
@@ -546,6 +551,8 @@ ${p.size}
       // ✅ 리뷰이벤트는 "까사플로아만" 출력하므로 아이콩콩에서는 제거
       return `${header}
 
+${IKONG_INTRO}
+
 ${blocks.join("\n\n")}
 
 ${IKONG_FOOTER}`.trim();
@@ -622,14 +629,20 @@ ${p.size}
       }
     }
 
-    const body = (qty600 > 0 || qty1200 > 0 || (data.optRooms && data.rooms.length > 0))
-      ? lines.join("\n\n")
-      : "(장수를 입력하면 라인이 생성됩니다.)";
+    const body = lines.join("\n\n");
 
     // ✅ 리뷰이벤트는 "까사플로아만" 출력하므로 아이콩콩에서는 제거
-    return `${header}
+    return body
+      ? `${header}
+
+${IKONG_INTRO}
 
 ${body}
+
+${IKONG_FOOTER}`.trim()
+      : `${header}
+
+${IKONG_INTRO}
 
 ${IKONG_FOOTER}`.trim();
   }
