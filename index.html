@@ -52,6 +52,7 @@
       position: sticky;
       top: 22px;
     }
+    .mobile-only { display:none; }
     .card {
       background: transparent;
       border-radius: 0;
@@ -1384,8 +1385,25 @@
         display:block;
         padding: 12px;
       }
-      .editor-stack { margin-bottom: 12px; }
-      .preview-stack { position: static; }
+      .editor-stack {
+        position:static;
+        margin-bottom:12px;
+      }
+      .mobile-only { display:inline-flex; }
+      .preview-stack {
+        display:none;
+        position:static;
+      }
+      .preview-stack.mobile-open,
+      .preview-stack.capture-active {
+        display:block;
+      }
+      .preview-stack.capture-active {
+        position:fixed;
+        left:-12000px;
+        top:0;
+        width:1100px;
+      }
       .quote-wrap { padding: 10px; }
       .quote-sheet {
         width: 1024px;
@@ -1545,6 +1563,8 @@
         <button id="btnGenerate" type="button">견적 생성</button>
         <button class="secondary" id="btnCopy" type="button">복사</button>
         <button class="secondary" id="btnCopyImage" type="button">이미지 복사</button>
+        <button class="secondary" id="btnDownloadImage" type="button">PNG 저장</button>
+        <button class="secondary mobile-only" id="btnTogglePreview" type="button">미리보기 보기</button>
         <button class="secondary" id="btnClear" type="button">초기화</button>
         <span id="status" class="mini"></span>
       </div>
@@ -2055,6 +2075,18 @@ ${p.tail}`
       );
     }
 
+    if (data.optCasaRefurb) {
+      const refurbBlocks = CASA_REFURB.map((product) => {
+        const total = qty1200 * product.unitPrice;
+        return `💕${product.name}
+${product.size.replace(/ × /g, "x")}
+예상장수: ${formatQty(qty1200)}
+예상금액: ${formatWon(total)}
+(행사가 장당 ${formatWon(product.unitPrice)})`;
+      });
+      blocks.push(`[리퍼브 라인업]\n\n${refurbBlocks.join("\n\n")}`);
+    }
+
     // ✅ 까사플로아에도 방 옵션(여러개) 출력
     if (data.optRooms && Array.isArray(data.rooms) && data.rooms.length > 0) {
       blocks.push("※ 방은 구조상 재단이 많아 1200보다 600 사이즈가 마감이 더 깔끔해 600 기준으로 견적드렸습니다.");
@@ -2552,11 +2584,14 @@ ${noticeBody}`.trim();
     const sheet = $("quoteSheet");
     if (!sheet) throw new Error("견적서 영역을 찾지 못했습니다.");
     if (document.fonts?.ready) await document.fonts.ready;
+    const previewStack = document.querySelector(".preview-stack");
+    const previewWasHidden = previewStack && getComputedStyle(previewStack).display === "none";
     const scaleEl = $("quoteScale");
     const wrap = sheet.closest(".quote-wrap");
     const previousScale = scaleEl?.style.getPropertyValue("--preview-scale") || "";
     const previousHeight = wrap?.style.height || "";
 
+    if (previewWasHidden) previewStack.classList.add("capture-active");
     if (scaleEl) scaleEl.style.setProperty("--preview-scale", "1");
     if (wrap) wrap.style.height = "auto";
     await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -2574,6 +2609,7 @@ ${noticeBody}`.trim();
         else scaleEl.style.removeProperty("--preview-scale");
       }
       if (wrap) wrap.style.height = previousHeight;
+      if (previewWasHidden) previewStack.classList.remove("capture-active");
       queuePreviewScale();
     }
   }
@@ -2597,7 +2633,16 @@ ${noticeBody}`.trim();
     const data = collectInput();
     const name = (data.customerName && data.customerName !== "고객") ? data.customerName : "고객";
     const safeName = name.replace(/[\\/:*?"<>|]/g, "").trim() || "고객";
-    return `ikongkong-estimate-${safeName}.png`;
+    const brand = currentTemplate === "casa" ? "casafloa" : "ikongkong";
+    return `${brand}-estimate-${safeName}.png`;
+  }
+
+  function toggleMobilePreview() {
+    const preview = document.querySelector(".preview-stack");
+    if (!preview) return;
+    const isOpen = preview.classList.toggle("mobile-open");
+    $("btnTogglePreview").textContent = isOpen ? "미리보기 닫기" : "미리보기 보기";
+    if (isOpen) queuePreviewScale();
   }
 
   async function copyQuoteImage() {
@@ -2738,6 +2783,7 @@ ${noticeBody}`.trim();
   $("btnCopy").addEventListener("click", copyOutput);
   $("btnCopyImage").addEventListener("click", copyQuoteImage);
   $("btnDownloadImage")?.addEventListener("click", downloadQuoteImage);
+  $("btnTogglePreview")?.addEventListener("click", toggleMobilePreview);
   $("btnClear").addEventListener("click", clearAll);
   window.addEventListener("resize", updatePreviewScale);
 
