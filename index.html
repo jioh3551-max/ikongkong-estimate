@@ -557,18 +557,62 @@
     }
     .q-mascot::before { top: 22px; left: 28px; }
     .q-mascot::after { top: 42px; right: 12px; color:#63c6c1; font-size:22px; }
-    .q-room-box {
+    .q-room-table-wrap {
       border: 1px solid rgba(53, 170, 164, .30);
       border-radius: 15px;
-      padding: 14px;
       background:#f8fdfd;
       margin-top: 12px;
+      overflow:hidden;
     }
-    .q-room-title {
-      font-size: 15px;
-      font-weight: 900;
+    .q-room-table {
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      color:#153c50;
+      font-family:"Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    .q-room-table th,
+    .q-room-table td {
+      padding:12px 14px;
+      border-right:1px solid rgba(53,170,164,.20);
+      border-bottom:1px solid rgba(53,170,164,.20);
+      text-align:center;
+      vertical-align:middle;
+    }
+    .q-room-table th:last-child,
+    .q-room-table td:last-child { border-right:0; }
+    .q-room-table tbody tr:last-child td { border-bottom:0; }
+    .q-room-table th {
+      background:#e7f7f7;
       color:#0f5f7f;
-      margin-bottom: 10px;
+      font-size:13px;
+      font-weight:900;
+      line-height:1.4;
+    }
+    .q-room-table th:first-child { width:20%; }
+    .q-room-table th:nth-child(2) { width:14%; }
+    .q-room-table td {
+      font-size:13px;
+      font-weight:700;
+    }
+    .q-room-table td:first-child {
+      color:#0f5f7f;
+      font-size:14px;
+      font-weight:900;
+    }
+    .q-room-price {
+      display:block;
+      color:#10283a;
+      font-size:18px;
+      font-weight:950;
+      white-space:nowrap;
+    }
+    .q-room-unit {
+      display:block;
+      margin-top:2px;
+      color:#66818d;
+      font-size:10px;
+      font-weight:700;
     }
     .q-empty {
       border: 1px dashed #cfe5e7;
@@ -2128,17 +2172,32 @@ ${noticeBody}`.trim();
 
   function renderRoomsVisual(data) {
     if (!data.optRooms || !Array.isArray(data.rooms) || data.rooms.length === 0) return "";
-    const roomsHtml = data.rooms.map((room) => `
-      <div class="q-room-box">
-        <div class="q-room-title">방 추가: ${esc(room.name)} (${formatQty(room.qty)})</div>
-        ${renderCardGrid(IKONG_600, room.qty, "teal")}
-      </div>
-    `).join("");
+    const roomRows = data.rooms.map((room) => `
+      <tr>
+        <td>${esc(room.name)}</td>
+        <td>${formatQty(room.qty)}</td>
+        ${IKONG_600.map((product) => `
+          <td>
+            <strong class="q-room-price">${formatWon(room.qty * product.eventPrice)}</strong>
+            <span class="q-room-unit">장당 ${formatWon(product.eventPrice)}</span>
+          </td>`).join("")}
+      </tr>`).join("");
 
     return `
       <section class="q-section">
         <div class="q-heading">방 추가 견적</div>
-        ${roomsHtml}
+        <div class="q-room-table-wrap">
+          <table class="q-room-table">
+            <thead>
+              <tr>
+                <th>시공 공간</th>
+                <th>예상수량</th>
+                ${IKONG_600.map((product) => `<th>${esc(cleanLabel(product.label))}<br><span class="q-room-unit">${esc(product.size.replace(/x/g, " × "))}</span></th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>${roomRows}</tbody>
+          </table>
+        </div>
       </section>`;
   }
 
