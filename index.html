@@ -5,89 +5,1356 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>견적 템플릿 (아이콩콩 ↔ 까사플로아)</title>
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+KR:wght@400;500;600;700;900&display=swap");
+
+    :root {
+      --ink: #111827;
+      --text: #334155;
+      --muted: #73869c;
+      --line: #e5ebf2;
+      --soft: #fbfdff;
+      --panel: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+      font-family: "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       margin: 0;
-      background:#edf7ff;
+      background:#edf4f7;
+      color: var(--text);
       transition: background-color .25s ease;
     }
-    body.template-ikong { background:#edf7ff; }
-    body.template-casa { background:#f5efff; }
-    .wrap { max-width: 920px; margin: 0 auto; padding: 16px; }
-    .card { background:#fff; border-radius: 14px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); margin-bottom: 12px; }
-    h1 { font-size: 18px; margin: 0 0 10px; }
-    h2 { font-size: 14px; margin: 0 0 8px; color:#333; }
+    body.template-ikong { background:#edf4f7; }
+    body.template-casa { background:#f3eff9; }
+    .wrap {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 22px;
+      display:grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 22px;
+      align-items:start;
+    }
+    .editor-stack {
+      min-width:0;
+      position: sticky;
+      top: 22px;
+      align-self:start;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, .07);
+      padding: 18px;
+    }
+    .preview-stack {
+      min-width:0;
+      position: sticky;
+      top: 22px;
+    }
+    .card {
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
+      box-shadow: none;
+      margin: 0;
+    }
+    .editor-stack > .card + .card {
+      border-top: 1px solid var(--line);
+      margin-top: 15px;
+      padding-top: 15px;
+    }
+    h1, h2, p { margin: 0; }
+    h1 {
+      color: var(--ink);
+      font-size: 21px;
+      line-height: 1.25;
+      margin: 0 0 8px;
+      letter-spacing: -.02em;
+    }
+    h2 {
+      color: var(--ink);
+      font-size: 14px;
+      margin: 0 0 10px;
+      font-weight: 950;
+    }
     .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid .field.full { grid-column: 1 / -1; }
+    .grid .hint.muted { display:none; }
     @media (max-width: 720px){ .grid { grid-template-columns: 1fr; } }
 
-    label { display:block; font-size: 12px; color:#555; margin-bottom: 4px; }
+    label {
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 800;
+    }
     input, select, textarea {
-      width: 100%; box-sizing: border-box;
-      padding: 10px; border-radius: 10px;
-      border: 1px solid #d9dde3; background: #fff;
+      width: 100%;
+      min-height: 0;
+      padding: 9px 10px;
+      border-radius: 6px;
+      border: 1px solid #d7e0ea;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
       font-size: 14px;
     }
-    textarea { min-height: 320px; resize: vertical; }
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+      line-height: 1.55;
+    }
 
     .row { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
     button {
-      border: 0; padding: 10px 14px; border-radius: 12px;
-      background:#111; color:#fff; font-size: 14px; cursor:pointer;
+      border: 0;
+      padding: 10px 13px;
+      border-radius: 6px;
+      background: var(--ink);
+      color:#fff;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 900;
+      cursor:pointer;
     }
-    button.secondary { background:#e9ecf1; color:#111; }
-    button.tab { background:#e9ecf1; color:#111; }
-    button.tab.active { background:#111; color:#fff; }
+    button.secondary { background:#e7eef6; color: var(--ink); }
+    button.tab { background:#e7eef6; color: var(--ink); }
+    button.tab.active { background: var(--ink); color:#fff; }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    .editor-stack > .card:first-child > .row:first-of-type {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .editor-stack > .card:first-child > .row:first-of-type .mini {
+      display:none;
+    }
 
     /* ✅ 아이콩콩 전용 모드 버튼 */
-    .ikong-mode-wrap { margin-top: 10px; display:none; }
-    .mode-btn{
-      border:0; padding:10px 12px; border-radius:12px;
-      font-size:14px; cursor:pointer;
-      background:#e9ecf1; color:#111;
+    .ikong-mode-wrap {
+      margin-top: 10px;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
-    .mode-btn.active{ background:#111; color:#fff; }
-    .mode-hint{ font-size:12px; color:#666; margin-left:6px; }
+    .mode-btn{
+      border:0;
+      padding:10px 12px;
+      border-radius:6px;
+      font-size:14px; cursor:pointer;
+      background:#e7eef6; color: var(--ink);
+    }
+    .mode-btn.active{ background: var(--ink); color:#fff; }
+    .mode-hint{
+      grid-column: 1 / -1;
+      font-size:12px;
+      color:#7d8fa3;
+      line-height: 1.5;
+      margin-left:0;
+    }
 
-    .hint { font-size: 12px; color:#666; margin-top: 6px; }
-    .mini { font-size: 12px; color:#666; }
+    .hint { font-size: 12px; color:#7d8fa3; line-height: 1.5; margin-top: 6px; }
+    .mini { font-size: 12px; color:#64748b; }
     .ok { color: #0a7; font-weight: 600; }
-    .muted { color:#999; }
+    .muted { color:#94a3b8; }
+    .editor-stack > .card:first-child > .mini.muted {
+      color:#64748b;
+      font-size: 13px;
+      line-height: 1.55;
+      margin-top: 10px !important;
+    }
 
     .qty-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .qty-grid > div:first-child .hint { display:none; }
     @media (max-width: 720px){ .qty-grid { grid-template-columns: 1fr; } }
 
     .option-row{
-      display:flex; align-items:flex-start; gap:12px;
-      padding: 10px 12px;
-      border: 1px solid #e6eaf0;
-      border-radius: 12px;
-      background:#fafbfc;
-      margin-top: 10px;
+      display:flex; align-items:center; gap:12px;
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background:#fbfdff;
+      margin-top: 14px;
       flex-wrap: wrap;
     }
     .option-row .check{
-      display:flex; align-items:center; gap:8px;
+      display:flex; align-items:center; gap:10px;
       min-width: 120px;
-      font-size: 13px; color:#222;
+      font-size: 14px;
+      color: var(--ink);
+      font-weight: 900;
       white-space: nowrap;
-      margin-top: 6px;
+      margin-top: 0;
     }
-    .option-row .check input{ width:18px; height:18px; }
+    .option-row .check input{ width:20px; height:20px; padding:0; accent-color: var(--ink); }
     .option-row .field{ flex:1; min-width: 260px; }
     .option-row .field label{ margin:0 0 4px; font-size:12px; color:#555; }
-    .option-row .field .sub{ font-size:12px; color:#999; margin-top:4px; }
+    .option-row .field .sub{ font-size:12px; color:#8193a9; line-height:1.5; margin-top:6px; }
+    #roomsWrap .field .row { gap:14px !important; align-items:center !important; }
+    #btnAddRoom {
+      min-height: 0;
+      padding: 9px 10px !important;
+      border-radius: 6px !important;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    #roomsHint {
+      flex-basis: 100%;
+      color:#8193a9;
+      font-size:12px;
+      line-height:1.5;
+      margin-top: 6px;
+    }
+    #roomsWrap .field > .sub { display:none; }
+    #reviewWrap { display:none !important; }
+    #casaRefurbWrap,
+    #casaPlanWrap { display:none; }
+    .casa-file-input {
+      width:100% !important;
+      border:1px solid #d7e0ea;
+      border-radius:6px;
+      background:#fff;
+      color:var(--ink);
+      font:inherit;
+      font-size:14px;
+      padding:9px 10px;
+    }
+    #casaPlanStatus {
+      min-height: 18px;
+      margin-top: 6px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #8193a9;
+    }
+    #casaPlanStatus.success { color:#26745b; }
+    #casaPlanStatus.error { color:#b54747; }
+    .casa-plan-scale-control {
+      margin-top:10px;
+      padding:10px 12px;
+      border:1px solid #e2e8f0;
+      border-radius:6px;
+      background:#fbfdff;
+    }
+    .casa-plan-scale-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:6px;
+      color:#73869c;
+      font-size:12px;
+      font-weight:800;
+    }
+    .casa-plan-scale-head output {
+      color:#111827;
+      font-weight:900;
+    }
+    #casaPlanScale {
+      width:100%;
+      padding:0;
+      accent-color:#b88a45;
+    }
 
-    .action-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
-    .action-row button{ min-width: 96px; }
+    .action-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+    .action-row button{
+      min-width: 0;
+      padding: 10px 13px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .action-row #btnGenerate { min-width: 96px; }
+    .action-row #btnCopyImage { min-width: 112px; }
 
     select { min-height: 40px; }
+
+    .preview-card {
+      padding: 0;
+      overflow: visible;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    .preview-toolbar {
+      display:none;
+    }
+    .preview-toolbar h2 { margin:0; }
+    .quote-wrap {
+      background: transparent;
+      padding: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      transition: height .15s ease;
+    }
+    .quote-scale {
+      width: 1024px;
+      flex: 0 0 1024px;
+      transform: scale(var(--preview-scale, 1));
+      transform-origin: top center;
+    }
+    .quote-sheet {
+      width: 1024px;
+      margin: 0 auto;
+      background:#fff;
+      color:#202020;
+      border-radius: 0;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, .07);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      font-family: "Pretendard", "Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    .q-hero {
+      padding: 24px 44px 18px;
+      text-align:center;
+      background:#fff;
+    }
+    .q-tagline {
+      margin: 0 0 8px;
+      color:#232323;
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -.02em;
+    }
+    .q-logo {
+      display:block;
+      width: 430px;
+      max-width: 88%;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+    .q-section {
+      padding: 18px 30px;
+    }
+    .q-section + .q-section {
+      border-top: 0;
+    }
+    .q-info-card {
+      border: 1.5px solid #ff8fac;
+      border-radius: 8px;
+      overflow: hidden;
+      background:#fff;
+    }
+    .q-info-grid {
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .q-info-item {
+      display:grid;
+      grid-template-columns: 54px 78px 1fr;
+      gap: 8px;
+      align-items:center;
+      min-height: 70px;
+      padding: 9px 20px;
+      border-right: 1.5px dashed rgba(255, 143, 172, .58);
+      border-bottom: 0;
+    }
+    .q-info-item:nth-child(3n) { border-right:0; }
+    .q-icon {
+      width: 42px; height: 42px;
+      color:#ff8fac;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .q-icon.teal { color:#ff8fac; }
+    .q-label {
+      color:#222;
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .q-value {
+      color:#111;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+    .q-premium-note {
+      display:grid;
+      grid-template-columns: 82px 1fr;
+      align-items:center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 12px 30px;
+      border: 1.5px solid rgba(255, 143, 172, .44);
+      border-radius: 34px;
+      background:#fff;
+    }
+    .q-note-icon .q-icon {
+      width: 58px;
+      height: 58px;
+      margin: auto;
+    }
+    .q-premium-note p {
+      margin: 0;
+      color:#222;
+      font-size: 16px;
+      line-height: 1.58;
+      text-align:center;
+      font-weight: 430;
+    }
+    .q-premium-note b { color:#ff789b; font-weight: 800; }
+    .q-heading {
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color:#18384a;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .q-heading::before {
+      content:"";
+      width: 34px; height: 2px;
+      background:#35aaa4;
+      border-radius: 999px;
+    }
+    .q-line-section {
+      padding-top: 2px;
+    }
+    .q-line-badge {
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 5px 14px;
+      margin: 0 0 16px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #54c9c4, #35aaa4);
+      color:#fff;
+      font-weight: 900;
+      font-size: 22px;
+      line-height: 1;
+      box-shadow: 0 3px 0 rgba(13, 108, 105, .28), 0 6px 16px rgba(57, 184, 179, .18);
+    }
+    .q-line-badge.pink {
+      background: linear-gradient(180deg, #ff9eb8, #f47b9e);
+      box-shadow: 0 3px 0 rgba(210, 78, 116, .25), 0 6px 16px rgba(244, 123, 158, .18);
+    }
+    .q-product-grid {
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .q-product-card {
+      border: 1.5px solid #3db8b3;
+      border-radius: 7px;
+      background:#fff;
+      overflow:hidden;
+      min-height: 0;
+      display:flex;
+      flex-direction:column;
+    }
+    .q-product-card.pink-border { border-color:#ff8fac; }
+    .q-product-body {
+      padding: 15px 18px 10px;
+      flex:1;
+    }
+    .q-product-name {
+      margin: 0;
+      color:#222;
+      text-align:center;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .q-product-size {
+      margin-top: 6px;
+      text-align:center;
+      color:#222;
+      font-size: 13px;
+      min-height: 18px;
+    }
+    .q-dash {
+      border-top:1px dashed #cfd7d9;
+      margin: 12px 0;
+    }
+    .q-price-line {
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      margin: 7px 0;
+      color:#111;
+      font-size: 14px;
+      align-items: baseline;
+    }
+    .q-price-line strong {
+      font-size: 15px;
+      color:#111827;
+      font-weight: 500;
+    }
+    .q-price-line .event {
+      color:#ff789b;
+      font-size: 23px;
+      font-weight: 900;
+    }
+    .q-price-line .old {
+      text-decoration: line-through;
+      color:#222;
+    }
+    .q-card-total {
+      background: linear-gradient(90deg, #43bdb8, #229c96);
+      color:#fff;
+      padding: 10px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 15px;
+    }
+    .q-card-total strong {
+      font-size: 23px;
+      letter-spacing: -.02em;
+    }
+    .q-card-total.pink { background: linear-gradient(90deg, #ff9ab5, #f47b9e); }
+    .q-refurb-layout {
+      display:grid;
+      grid-template-columns: 1.08fr 1fr 1fr .9fr;
+      gap: 20px;
+      align-items:stretch;
+    }
+    .q-refurb-desc {
+      border: 1.5px solid #ff8fac;
+      border-radius: 8px;
+      padding: 14px 17px;
+      background:#fff9fb;
+      color:#111;
+      line-height: 1.52;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .q-refurb-desc b {
+      display:block;
+      color:#ff789b;
+      margin-bottom: 8px;
+      font-size: 17px;
+    }
+    .q-mascot {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 232px;
+      position: relative;
+    }
+    .q-mascot img {
+      width: 180px;
+      max-width: 100%;
+      opacity: .95;
+    }
+    .q-mascot::before,
+    .q-mascot::after {
+      content:"★";
+      position:absolute;
+      color:#ff8fac;
+      font-size:28px;
+      font-weight:900;
+    }
+    .q-mascot::before { top: 22px; left: 28px; }
+    .q-mascot::after { top: 42px; right: 12px; color:#63c6c1; font-size:22px; }
+    .q-room-box {
+      border: 1px solid rgba(53, 170, 164, .30);
+      border-radius: 15px;
+      padding: 14px;
+      background:#f8fdfd;
+      margin-top: 12px;
+    }
+    .q-room-title {
+      font-size: 15px;
+      font-weight: 900;
+      color:#0f5f7f;
+      margin-bottom: 10px;
+    }
+    .q-empty {
+      border: 1px dashed #cfe5e7;
+      color:#789;
+      text-align:center;
+      border-radius: 14px;
+      padding: 24px;
+      background:#fbfefe;
+      font-weight: 750;
+    }
+    .q-notice-section {
+      padding-top: 12px;
+    }
+    .q-notice-grid {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px 36px;
+      border-top: 1px solid #d9dfe2;
+      padding-top: 20px;
+    }
+    .q-notice-item {
+      display:grid;
+      grid-template-columns: 50px 1fr;
+      gap: 13px;
+      align-items:start;
+      color:#111;
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 480;
+    }
+    .q-notice-item .q-icon {
+      width: 44px;
+      height: 44px;
+      border:1.2px solid rgba(53, 170, 164, .65);
+      border-radius: 50%;
+      color:#35aaa4;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .q-footer {
+      text-align:center;
+      padding: 31px 20px 16px;
+      color:#222;
+      background:
+        radial-gradient(circle at 4% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 14% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 24% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 34% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 44% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 54% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 64% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 74% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 84% 0, #ffe4ec 0 26px, transparent 27px),
+        radial-gradient(circle at 94% 0, #ffe4ec 0 26px, transparent 27px),
+        #fff;
+      font-weight: 500;
+      border-top:0;
+      font-size: 16px;
+    }
+    .q-footer img {
+      width: 18px;
+      vertical-align: middle;
+      margin: 0 8px;
+    }
+    .q-footer b { color:#229c96; font-weight: 900; }
+    .q-footer .star { color:#ff8fac; font-weight:900; margin: 0 12px; }
+    .q-casa-empty {
+      padding: 42px;
+      text-align:center;
+      color:#64748b;
+      font-weight: 800;
+    }
+
+    .casa-estimate {
+      --casa-ink: #2f251f;
+      --casa-text: #6b5a4c;
+      --casa-muted: #8a7a6a;
+      --casa-gold: #b88a45;
+      --casa-gold-2: #d8bd84;
+      --casa-line: #e7d6bd;
+      --casa-cream: #fff8ed;
+      --casa-soft: #fbf0df;
+      width: 1024px;
+      min-height: 1420px;
+      position: relative;
+      overflow: hidden;
+      color: var(--casa-ink);
+      background: #fff8ed;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    .casa-estimate::before {
+      content:"";
+      position:absolute;
+      left:-120px;
+      top:-130px;
+      width:360px;
+      height:260px;
+      border:1px solid rgba(184, 138, 69, .28);
+      border-radius:50%;
+      transform: rotate(-22deg);
+    }
+    .casa-estimate::after {
+      content:"";
+      position:absolute;
+      right:-80px;
+      bottom:36px;
+      width:250px;
+      height:250px;
+      border:1px solid rgba(184, 138, 69, .16);
+      border-radius:50%;
+    }
+    .casa-inner {
+      position:relative;
+      z-index:1;
+      padding: 32px 38px 0;
+    }
+    .casa-header {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 0 18px 24px;
+    }
+    .casa-logo-area {
+      text-align:center;
+      width:100%;
+    }
+    .casa-leaf {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      display:block;
+      margin: 0 auto -2px;
+    }
+    .casa-brand {
+      margin: 0;
+      letter-spacing: .18em;
+      font-size: 46px;
+      line-height: 1;
+      font-family: "Cormorant Garamond", "Times New Roman", serif;
+      font-weight: 600;
+      color: var(--casa-ink);
+    }
+    .casa-korean {
+      margin-top: 10px;
+      color: var(--casa-muted);
+      font-size: 15px;
+      letter-spacing: .42em;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+    .casa-info-card {
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      padding: 12px 18px;
+      border: 1px solid rgba(184, 138, 69, .32);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .82);
+      box-shadow: 0 16px 30px rgba(86, 61, 38, .10);
+    }
+    .casa-info-item {
+      display:grid;
+      grid-template-columns: 54px 1fr;
+      gap: 14px;
+      align-items:center;
+      min-height: 76px;
+      padding: 8px 18px;
+      border-right: 1px dashed rgba(184, 138, 69, .30);
+    }
+    .casa-info-item:nth-child(3n) { border-right: 0; }
+    .casa-info-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #f5edde;
+      color: var(--casa-ink);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .casa-info-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: currentColor;
+    }
+    .casa-estimate svg {
+      width: 24px;
+      height: 24px;
+      flex: none;
+    }
+    .casa-info-label {
+      color: var(--casa-ink);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .casa-info-value {
+      color: var(--casa-ink);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+    .casa-plan-section {
+      display:grid;
+      grid-template-columns: 230px 1fr;
+      gap: 24px;
+      align-items:center;
+      margin-top: 30px;
+    }
+    .casa-plan-copy {
+      padding-left: 16px;
+    }
+    .casa-section-kicker {
+      color: var(--casa-gold);
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .casa-plan-copy h3,
+    .casa-product-section h3,
+    .casa-refurb-section h3,
+    .casa-notice h3 {
+      margin: 0;
+      color: var(--casa-ink);
+      font-family: "Noto Serif KR", "Nanum Myeongjo", "Batang", serif;
+      font-size: 30px;
+      letter-spacing: .12em;
+      font-weight: 700;
+    }
+    .casa-plan-copy p {
+      margin: 16px 0 0;
+      color: var(--casa-text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.75;
+    }
+    .casa-plant {
+      width: 130px;
+      height: 86px;
+      margin-top: 28px;
+      opacity: .58;
+      background: #f1dfc0;
+      border-bottom: 1px solid rgba(184,138,69,.25);
+    }
+    .casa-plan-frame {
+      border: 1.5px solid var(--casa-gold);
+      border-radius: 18px;
+      background: #fffdf8;
+      min-height: 300px;
+      padding: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .casa-plan-frame img {
+      width: 100%;
+      height: 340px;
+      object-fit: contain;
+      display:block;
+      transform-origin:center;
+      transition:transform .15s ease;
+    }
+    .casa-plan-placeholder {
+      width:100%;
+      min-height: 266px;
+      border: 1px dashed rgba(184, 138, 69, .45);
+      border-radius: 14px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      color: #6b5a4c;
+      font-family: inherit;
+      background: rgba(255, 250, 242, .64);
+      text-align:center;
+    }
+    .casa-plan-placeholder svg {
+      width: 42px;
+      height: 42px;
+      stroke: var(--casa-gold);
+    }
+    .casa-plan-placeholder strong {
+      font-size: 18px;
+      color:#4f3d30;
+    }
+    .casa-plan-placeholder span {
+      font-size: 13px;
+      color:#8a7a6a;
+    }
+    .casa-product-section {
+      margin-top: 32px;
+      text-align:center;
+    }
+    .casa-section-title {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 13px;
+      margin-bottom: 16px;
+    }
+    .casa-section-title::before,
+    .casa-section-title::after {
+      content:"";
+      height:1px;
+      flex:1;
+      background: var(--casa-gold);
+    }
+    .casa-product-grid {
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+    .casa-product-grid.has-refurb {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .casa-product-grid.has-refurb .casa-product-card {
+      min-height: 292px;
+      padding: 28px 10px 82px;
+    }
+    .casa-product-grid.has-refurb .casa-product-badge {
+      top: 13px;
+      width: 34px;
+      height: 34px;
+      font-size: 15px;
+    }
+    .casa-product-grid.has-refurb .casa-product-name {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 38px;
+      margin: 34px 0 4px;
+      font-size: 14px;
+      line-height: 1.3;
+      white-space: normal;
+      word-break: keep-all;
+    }
+    .casa-product-grid.has-refurb .casa-product-size {
+      min-height: 28px;
+      margin-bottom: 10px;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+    .casa-product-grid.has-refurb .casa-product-lines {
+      padding-top: 10px;
+      font-size: 10.5px;
+      line-height: 1.75;
+    }
+    .casa-product-grid.has-refurb .casa-product-row {
+      gap: 4px;
+    }
+    .casa-product-grid.has-refurb .casa-product-total {
+      min-height: 72px;
+      padding: 9px 6px 10px;
+    }
+    .casa-product-grid.has-refurb .casa-product-total span {
+      font-size: 10.5px;
+    }
+    .casa-product-grid.has-refurb .casa-product-total strong {
+      font-size: 19px;
+    }
+    .casa-product-card {
+      position:relative;
+      min-height: 318px;
+      padding: 32px 18px 98px;
+      border: 1px solid rgba(184, 138, 69, .34);
+      border-radius: 16px;
+      overflow:hidden;
+      background: #fff6e8;
+      box-shadow: 0 12px 24px rgba(86, 61, 38, .08);
+      text-align:left;
+    }
+    .casa-product-card:nth-child(odd) .casa-product-total {
+      background: #2b231e;
+    }
+    .casa-product-card:nth-child(even) .casa-product-total {
+      background: #a87835;
+    }
+    .casa-product-badge {
+      position:absolute;
+      top: 17px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: #b88a45;
+      color:#fff;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 18px;
+      font-weight: 700;
+      box-shadow: inset 0 1px 4px rgba(255,255,255,.32), 0 5px 10px rgba(86,61,38,.14);
+    }
+    .casa-product-name {
+      margin: 42px 0 6px;
+      text-align:center;
+      color: var(--casa-ink);
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .casa-product-size {
+      text-align:center;
+      color: #6b5a4c;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .casa-product-lines {
+      border-top: 1px dashed rgba(90,68,50,.30);
+      padding-top: 14px;
+      font-family: inherit;
+      color: #2f261f;
+      font-size: 13px;
+      line-height: 1.85;
+    }
+    .casa-product-row {
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .casa-product-row strong {
+      color:#2b211c;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .casa-product-total {
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      min-height: 84px;
+      padding: 11px 12px 13px;
+      color:#fff8ed;
+      text-align:center;
+      font-family: inherit;
+      box-shadow: inset 0 1px rgba(255,255,255,.18);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .casa-product-total span {
+      display:block;
+      color:#f1dfbd;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight:700;
+      line-height: 1.1;
+      letter-spacing: .08em;
+    }
+    .casa-product-total strong {
+      display:block;
+      margin-top: 4px;
+      color:#fffaf2;
+      font-size: 27px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: .01em;
+      white-space: nowrap;
+    }
+    .casa-review-banner {
+      display:grid;
+      grid-template-columns: 170px 1.18fr 1fr 1fr 1fr;
+      align-items:center;
+      gap: 0;
+      min-height: 112px;
+      margin-top: 30px;
+      border: 1px solid rgba(184, 138, 69, .30);
+      border-radius: 14px;
+      background: rgba(255,255,255,.82);
+      box-shadow: 0 10px 20px rgba(86, 61, 38, .08);
+      overflow:hidden;
+    }
+    .casa-room-section {
+      margin-top: 30px;
+      padding: 18px 20px 20px;
+      border: 1px solid rgba(184, 138, 69, .28);
+      border-radius: 18px;
+      background: rgba(255, 250, 242, .74);
+      box-shadow: 0 10px 22px rgba(86, 61, 38, .06);
+    }
+    .casa-room-heading {
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+    .casa-room-heading h3 {
+      margin:0;
+      color:var(--casa-ink);
+      font-family: "Noto Serif KR", "Nanum Myeongjo", "Batang", serif;
+      font-size: 25px;
+      letter-spacing:.08em;
+    }
+    .casa-room-note {
+      max-width: 570px;
+      margin:0;
+      color:#6b5a4c;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight:600;
+      line-height:1.6;
+      text-align:right;
+    }
+    .casa-room-table {
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid rgba(184, 138, 69, .28);
+      border-radius:12px;
+      background:rgba(255,255,255,.62);
+      color:var(--casa-ink);
+      font-family:inherit;
+      table-layout:fixed;
+    }
+    .casa-room-table th,
+    .casa-room-table td {
+      padding:11px 13px;
+      border-right:1px solid rgba(184, 138, 69, .20);
+      border-bottom:1px solid rgba(184, 138, 69, .20);
+      text-align:center;
+      vertical-align:middle;
+    }
+    .casa-room-table th:last-child,
+    .casa-room-table td:last-child { border-right:0; }
+    .casa-room-table tbody tr:last-child td { border-bottom:0; }
+    .casa-room-table thead th {
+      background:#f3e7d4;
+      color:#664a2d;
+      font-family:"Noto Serif KR", "Nanum Myeongjo", "Batang", serif;
+      font-size:13px;
+      font-weight:700;
+      line-height:1.35;
+    }
+    .casa-room-table thead th:first-child { width:19%; }
+    .casa-room-table thead th:nth-child(2) { width:15%; }
+    .casa-room-table td {
+      font-size:13px;
+      font-weight:600;
+      line-height:1.5;
+    }
+    .casa-room-table td:first-child {
+      color:#715432;
+      font-family:inherit;
+      font-size:15px;
+      font-weight:700;
+    }
+    .casa-room-price {
+      display:block;
+      color:#2f261f;
+      font-family:inherit;
+      font-size:18px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .casa-room-unit {
+      display:block;
+      margin-top:2px;
+      color:#6b5a4c;
+      font-size:10.5px;
+      font-weight:600;
+    }
+    .casa-review-emblem {
+      min-height: 112px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    .casa-review-medal {
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      border: 4px solid #b88a45;
+      background: #302721;
+      color:#f2d4a2;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      box-shadow: 0 8px 16px rgba(86, 61, 38, .16);
+      font-family: inherit;
+      font-weight: 900;
+      font-size: 15px;
+    }
+    .casa-review-medal svg {
+      width: 34px;
+      height: 34px;
+      stroke: #f2d4a2;
+      transform: translateY(-10px);
+    }
+    .casa-review-medal span {
+      position:absolute;
+      left: -14px;
+      right: -14px;
+      bottom: 20px;
+      padding: 5px 8px;
+      color:#fff4d8;
+      background:#a87835;
+      border-radius: 2px;
+      text-align:center;
+      letter-spacing: .05em;
+    }
+    .casa-review-total {
+      text-align:center;
+      color: var(--casa-ink);
+      font-family: inherit;
+      font-weight: 800;
+      letter-spacing: .04em;
+      line-height: 1.2;
+    }
+    .casa-review-total strong {
+      display:block;
+      font-size: 34px;
+      line-height: 1.1;
+    }
+    .casa-review-total span {
+      display:block;
+      margin-top: 4px;
+      font-size: 24px;
+    }
+    .casa-review-item {
+      min-height: 112px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 12px;
+      color: var(--casa-ink);
+      border-left: 1px solid rgba(184, 138, 69, .28);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight:700;
+      line-height: 1.35;
+      text-align:center;
+    }
+    .casa-review-item svg {
+      width: 40px;
+      height: 40px;
+      stroke: #5b412a;
+    }
+    .casa-refurb-section {
+      margin-top: 30px;
+      padding: 20px 22px 22px;
+      border: 1px solid rgba(184, 138, 69, .25);
+      border-radius: 18px;
+      background: rgba(241, 232, 218, .72);
+    }
+    .casa-refurb-layout {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      max-width: 690px;
+      margin: 0 auto;
+    }
+    .casa-refurb-section .casa-section-title {
+      margin-bottom:16px;
+    }
+    .casa-refurb-section .casa-product-card {
+      min-height:306px;
+    }
+    .casa-notice {
+      display:grid;
+      grid-template-columns: 1fr 210px;
+      gap: 24px;
+      align-items:start;
+      margin-top: 30px;
+      padding: 0 8px 20px;
+    }
+    .casa-notice-title {
+      display:grid;
+      grid-template-columns: 110px 1fr;
+      gap: 20px;
+    }
+    .casa-notice h3 {
+      font-size: 24px;
+      line-height: 1.4;
+      letter-spacing: .06em;
+    }
+    .casa-notice ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #493a30;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight:600;
+      line-height: 1.7;
+    }
+    .casa-notice li + li {
+      margin-top:5px;
+    }
+    .casa-color-card {
+      padding: 18px 20px;
+      border: 1px solid rgba(184, 138, 69, .35);
+      border-radius: 12px;
+      background: rgba(255, 250, 242, .80);
+      color: var(--casa-ink);
+      font-family: inherit;
+    }
+    .casa-color-card h4 {
+      margin: 0 0 12px;
+      color: var(--casa-gold);
+      font-size: 18px;
+      letter-spacing: .08em;
+    }
+    .casa-color-card p {
+      margin: 8px 0 0;
+      color:#4f4035;
+      font-size: 12.5px;
+      font-weight:600;
+      line-height: 1.65;
+    }
+    .casa-footer {
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      align-items:center;
+      border-top: 1px solid rgba(184, 138, 69, .28);
+      padding: 20px 40px 22px;
+      color: var(--casa-ink);
+      background: rgba(255,250,242,.82);
+      font-family: inherit;
+      text-align:center;
+      position:relative;
+      z-index:1;
+    }
+    .casa-footer span + span {
+      border-left: 1px solid rgba(184, 138, 69, .35);
+    }
+    .casa-footer span {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      min-height: 28px;
+      font-size: 16px;
+    }
+    .casa-footer svg {
+      width: 23px;
+      height: 23px;
+      stroke: var(--casa-ink);
+    }
+
+    @media (max-width: 900px) {
+      .casa-estimate { width: 1024px; }
+      .casa-product-grid { grid-template-columns: repeat(2, 1fr); }
+      .casa-product-grid.has-refurb { grid-template-columns: repeat(2, 1fr); }
+      .casa-plan-section { grid-template-columns: 1fr; }
+      .casa-refurb-layout { grid-template-columns: 1fr; }
+      .casa-room-heading { align-items:flex-start; flex-direction:column; }
+      .casa-room-note { text-align:left; }
+      .casa-notice { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 900px) {
+      .wrap {
+        display:block;
+        padding: 12px;
+      }
+      .editor-stack { margin-bottom: 12px; }
+      .preview-stack { position: static; }
+      .quote-wrap { padding: 10px; }
+      .quote-sheet {
+        width: 1024px;
+      }
+    }
   </style>
 </head>
 <body class="template-ikong">
   <div class="wrap">
+    <div class="editor-stack">
 
     <div class="card">
-      <h1>견적 템플릿 🔁 (아이콩콩 ↔ 까사플로아)</h1>
+      <h1>아이콩콩 견적서</h1>
 
       <div class="row">
         <button id="btnTplIkong" class="tab active">아이콩콩 양식</button>
@@ -103,23 +1370,23 @@
       </div>
 
       <div class="mini muted" style="margin-top:8px;">
-        고객정보 + 시공범위 선택 + 1200/600 장수 입력 → 템플릿 변환 & 문구 생성
+        기존 아이콩콩 견적 템플릿의 상품/가격/안내 문구를 사용해 카톡용 문구와 이미지 견적서를 함께 만듭니다.
       </div>
     </div>
 
     <div class="card">
-      <h2>고객/현장 정보</h2>
+      <h2>고객 정보</h2>
       <div class="grid">
         <div>
-          <label>성함(고객명)</label>
+          <label>성함</label>
           <input id="customerName" placeholder="홍길동" />
         </div>
         <div>
-          <label>연락처(선택)</label>
+          <label>연락처</label>
           <input id="phone" placeholder="010-0000-0000" />
         </div>
-        <div>
-          <label>현장명(아파트/빌라/오피스텔 등)</label>
+        <div class="field full">
+          <label>주소지</label>
           <input id="siteName" placeholder="OO아파트 / OO빌라 / OO오피스텔" />
           <div class="hint muted">※ 출력 헤더에는 “현장명:” 표시 없이 값만 반영됩니다</div>
         </div>
@@ -135,7 +1402,7 @@
           </select>
         </div>
         <div>
-          <label>시공범위/시공공간 (선택)</label>
+          <label>시공공간</label>
           <select id="areasPreset">
             <option value="">선택하세요</option>
             <option value="거실">▼거실</option>
@@ -149,7 +1416,7 @@
           </select>
           <div class="hint muted">※ 선택한 값이 “시공범위/시공공간”에 그대로 출력됩니다</div>
         </div>
-        <div>
+        <div class="field full">
           <label>시공공간 직접입력</label>
           <input id="areasCustom" placeholder="예: 거실, 복도, 펜트리" />
           <div class="hint muted">직접입력 값이 있으면 선택값보다 우선 반영됩니다.</div>
@@ -194,7 +1461,7 @@
       </div>
 
       <!-- ✅ 리뷰이벤트: 현재 UI는 그대로 두되, 출력은 '까사플로아'에서만 적용 -->
-      <div class="option-row">
+      <div class="option-row" id="reviewWrap">
         <label class="check">
           <input id="optReview" type="checkbox" />
           리뷰이벤트
@@ -205,9 +1472,35 @@
         </div>
       </div>
 
+      <div class="option-row" id="casaRefurbWrap">
+        <label class="check">
+          <input id="casaRefurbToggle" type="checkbox" />
+          리퍼브 라인업 포함
+        </label>
+      </div>
+
+      <div class="option-row" id="casaPlanWrap">
+        <div class="field">
+          <label for="casaPlanImage">이미지 업로드</label>
+          <input class="casa-file-input" id="casaPlanImage" type="file" accept="image/*" />
+          <div class="row" style="gap:8px; margin-top:8px;">
+            <button type="button" class="secondary" id="casaPlanClear">이미지 삭제</button>
+          </div>
+          <div class="casa-plan-scale-control">
+            <div class="casa-plan-scale-head">
+              <span>도면 크기</span>
+              <output id="casaPlanScaleValue" for="casaPlanScale">100%</output>
+            </div>
+            <input id="casaPlanScale" type="range" min="60" max="200" step="5" value="100" />
+          </div>
+          <div id="casaPlanStatus" role="status" aria-live="polite">이미지를 넣지 않으면 견적서에서 이미지 영역이 보이지 않습니다.</div>
+        </div>
+      </div>
+
       <div class="action-row">
         <button id="btnGenerate" type="button">견적 생성</button>
         <button class="secondary" id="btnCopy" type="button">복사</button>
+        <button class="secondary" id="btnCopyImage" type="button">이미지 복사</button>
         <button class="secondary" id="btnClear" type="button">초기화</button>
         <span id="status" class="mini"></span>
       </div>
@@ -218,8 +1511,24 @@
       <textarea id="output" readonly placeholder="견적 생성 버튼을 누르면 여기에 문구가 생성됩니다."></textarea>
     </div>
 
+    </div>
+    <div class="preview-stack">
+
+    <div class="card preview-card">
+      <div class="preview-toolbar">
+        <h2>견적서 이미지</h2>
+      </div>
+      <div class="quote-wrap">
+        <div class="quote-scale" id="quoteScale">
+          <article class="quote-sheet" id="quoteSheet"></article>
+        </div>
+      </div>
+    </div>
+
+    </div>
   </div>
 
+<script src="./html2canvas.min.js"></script>
 <script>
   // =========================
   // 1) 프리셋 / 고정문구
@@ -279,6 +1588,11 @@ A/S가 적용되지 않는 상품입니다`;
   const CASA_1200 = [
     { title: "💕프리미엄1200 (24T)", size: "120cmx120cmx2.4cm", unitPrice: 109000, tail: "(행사가 장당 109,000원)" },
     { title: "💕스킨퓨어1200 (24T)", size: "120cmx120cmx2.4cm", unitPrice: 119000, tail: "(행사가 장당 119,000원)" },
+  ];
+
+  const CASA_REFURB = [
+    { name: "프리미엄 1200 리퍼브", size: "120cm × 120cm × 2.4cm", unitPrice: 99000 },
+    { name: "스킨퓨어 1200 리퍼브", size: "120cm × 120cm × 2.4cm", unitPrice: 108000 },
   ];
 
   const CASA_FREE_SERVICE_LINE = "☑️전문시공서비스 & 출장비는 모두 무료입니다.";
@@ -374,7 +1688,7 @@ ${CASA_FREE_SERVICE_LINE}
     if (!btn) return;
     btn.disabled = !roomsEnabled() || getRoomCount() >= MAX_ROOMS;
     const hint = $("roomsHint");
-    if (hint) hint.textContent = `※ 최대 ${MAX_ROOMS}개까지 추가 가능 (현재 ${getRoomCount()}개)`;
+    if (hint) hint.textContent = `체크 시 방 이름과 600 장수를 여러 개 추가할 수 있습니다. (현재 ${getRoomCount()}개 / 최대 ${MAX_ROOMS}개)`;
   }
 
   function makeRoomRow({ name = "작은방", qty = "" } = {}) {
@@ -462,13 +1776,17 @@ ${CASA_FREE_SERVICE_LINE}
     }
 
     const optReview = $("optReview")?.checked || false;
+    const optCasaRefurb = $("casaRefurbToggle")?.checked || false;
 
     return {
       customerName, phone, siteName,
       pyeongType, extension, areasPreset, areasCustom,
       qty1200, qty600,
       optRooms, rooms,
-      optReview
+      optReview,
+      optCasaRefurb,
+      casaPlanImageSrc,
+      casaPlanImageScale: safeNum($("casaPlanScale")?.value) || 100
     };
   }
 
@@ -476,6 +1794,8 @@ ${CASA_FREE_SERVICE_LINE}
   // 4) 템플릿 빌더
   // =========================
   let ikongMode = "normal"; // "normal" | "pick"
+  let casaPlanImageSrc = "";
+  let casaPlanImageLoadToken = 0;
   const IKONG_EXTRA_DISCOUNT = 100000;
 
   function buildIkongkong(data) {
@@ -693,6 +2013,8 @@ ${p.tail}`
 
     // ✅ 까사플로아에도 방 옵션(여러개) 출력
     if (data.optRooms && Array.isArray(data.rooms) && data.rooms.length > 0) {
+      blocks.push("※ 방은 구조상 재단이 많아 1200보다 600 사이즈가 마감이 더 깔끔해 600 기준으로 견적드렸습니다.");
+
       for (const room of data.rooms) {
         const roomBlocks = [];
         roomBlocks.push(`-방(${room.name})`);
@@ -715,7 +2037,7 @@ ${p.size}
     // ✅ 리뷰이벤트는 "까사플로아"에서만 출력
     // ✅ 위치: '☑️프리미엄&클래식: ...' 바로 위로
     const colorLine = "☑️프리미엄&클래식: 크림톤, 베이지, 그레이";
-    const reviewLine = data.optReview ? `${REVIEW_TEXT}\n\n` : "";
+    const reviewLine = `${REVIEW_TEXT}\n\n`;
 
     const noticeBody = CASA_NOTICE
       .replace(colorLine, "")
@@ -732,6 +2054,528 @@ ${noticeBody}`.trim();
   }
 
   // =========================
+  // 4-1) 아이콩콩 이미지 견적서
+  // =========================
+  function esc(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function cleanLabel(label) {
+    return String(label || "").replace(/👉/g, "").trim();
+  }
+
+  function customerDisplayName(name) {
+    const v = String(name || "").trim();
+    if (!v || v === "고객") return "고객님";
+    return `${v} 님`;
+  }
+
+  function qIcon(type, teal = false) {
+    const cls = teal ? "q-icon teal" : "q-icon";
+    const common = `class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+    const paths = {
+      user: `<circle cx="12" cy="7.5" r="3.7"/><path d="M4.8 20c1.2-4 4-6.1 7.2-6.1s6 2.1 7.2 6.1"/>`,
+      phone: `<path d="M7.2 4.7 9.5 9c.3.5.2 1.1-.2 1.5l-1.1 1.1c1.2 2.3 3 4.1 5.3 5.3l1.1-1.1c.4-.4 1-.5 1.5-.2l4.2 2.3c.6.3.9 1 .7 1.7-.5 1.7-1.8 2.5-3.2 2.1C9.8 19.4 4.6 14.2 2.3 6.2 1.9 4.8 2.7 3.5 4.4 3c.7-.2 1.4.1 1.8.7Z"/><path d="M15.5 4.5c2 .5 3.5 2 4 4"/><path d="M15.3 8.1c.8.3 1.3.8 1.6 1.6"/>`,
+      pin: `<path d="M20 10c0 5.4-8 11-8 11S4 15.4 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>`,
+      home: `<path d="m3.5 11 8.5-7 8.5 7"/><path d="M6 10.5V20h12v-9.5"/><path d="M10 20v-5h4v5"/>`,
+      ruler: `<path d="M4 16.5 16.5 4 20 7.5 7.5 20 4 16.5Z"/><path d="m8 16-1.5-1.5"/><path d="m10.5 13.5-1.5-1.5"/><path d="m13 11-1.5-1.5"/><path d="m15.5 8.5-1.5-1.5"/>`,
+      tools: `<path d="M14.5 5.5 18 2l4 4-3.5 3.5"/><path d="m13.5 6.5 4 4"/><path d="M4 20l7.5-7.5"/><path d="M5 9.5 2.5 7 5 4.5 8.5 8 7 9.5l7.5 7.5-2.5 2.5L4.5 12 3 13.5 1.5 12l3.5-2.5Z"/>`,
+      diamond: `<path d="M3.5 9 8 4h8l4.5 5L12 21 3.5 9Z"/><path d="M3.5 9h17"/><path d="m8 4 4 17 4-17"/>`,
+      truck: `<path d="M3 6h11v9H3z"/><path d="M14 9h3.5l3.5 3.5V15h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>`,
+      calc: `<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/>`,
+      card: `<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/>`,
+      shield: `<path d="M12 3 20 6v5c0 5-3.2 8.2-8 10-4.8-1.8-8-5-8-10V6l8-3Z"/><path d="m9.5 12 1.7 1.7 3.5-4"/>`,
+      heart: `<path d="M12 20s-7-4.3-8.8-9.1C2.1 8 3.8 5.5 6.5 5.5c1.6 0 2.8.8 3.5 2 0.7-1.2 1.9-2 3.5-2 2.7 0 4.4 2.5 3.3 5.4C19 15.7 12 20 12 20Z"/>`
+    };
+    return `<svg ${common}>${paths[type] || paths.diamond}</svg>`;
+  }
+
+  function quoteProductCard(product, qty, tone = "teal", discount = 0) {
+    const total = qty * product.eventPrice;
+    const finalTotal = Math.max(0, total - discount);
+    const hasDiscount = discount > 0;
+    const totalClass = tone === "pink" ? " pink" : "";
+    const cardClass = tone === "pink" ? " q-product-card pink-border" : "q-product-card";
+    const discountRow = hasDiscount
+      ? `<div class="q-price-line"><span>추가 할인</span><strong class="event">-${formatWon(discount)}</strong></div>`
+      : "";
+    return `
+      <div class="${cardClass}">
+        <div class="q-product-body">
+          <h4 class="q-product-name">${esc(cleanLabel(product.label))}</h4>
+          <div class="q-product-size">${esc(product.size.replace(/x/g, " × "))}</div>
+          <div class="q-dash"></div>
+          <div class="q-price-line"><span>장당</span><strong class="old">${formatWon(product.regularPrice)}</strong></div>
+          <div class="q-price-line"><span>이벤트가</span><strong class="event">${formatWon(product.eventPrice)}</strong></div>
+          <div class="q-price-line"><span>예상수량</span><strong>${formatQty(qty)}</strong></div>
+          ${discountRow}
+        </div>
+        <div class="q-card-total${totalClass}">
+          <span>총금액</span>
+          <strong>${formatWon(finalTotal)}</strong>
+        </div>
+      </div>`;
+  }
+
+  function renderCardGrid(products, qty, tone = "teal", discount = 0) {
+    return `<div class="q-product-grid">${products.map(p => quoteProductCard(p, qty, tone, discount)).join("")}</div>`;
+  }
+
+  function renderRoomsVisual(data) {
+    if (!data.optRooms || !Array.isArray(data.rooms) || data.rooms.length === 0) return "";
+    const roomsHtml = data.rooms.map((room) => `
+      <div class="q-room-box">
+        <div class="q-room-title">방 추가: ${esc(room.name)} (${formatQty(room.qty)})</div>
+        ${renderCardGrid(IKONG_600, room.qty, "teal")}
+      </div>
+    `).join("");
+
+    return `
+      <section class="q-section">
+        <div class="q-heading">방 추가 견적</div>
+        ${roomsHtml}
+      </section>`;
+  }
+
+  function renderLineupsVisual(data) {
+    const blocks = [];
+
+    if (ikongMode === "pick") {
+      if (data.qty1200 > 0) {
+        const skin = IKONG_1200_PREMIUM.find(x => x.label.includes("스킨퓨어"));
+        const prem = IKONG_1200_PREMIUM.find(x => x.label.includes("프리미엄"));
+        const ordered = [skin, prem].filter(Boolean);
+        blocks.push(`
+          <section class="q-section q-line-section">
+            <div class="q-line-badge pink">★ 띠내언니 PICK</div>
+            ${renderCardGrid(ordered, data.qty1200, "pink", IKONG_EXTRA_DISCOUNT)}
+          </section>`);
+      }
+    } else {
+      const premiumCards = [];
+      if (data.qty600 > 0) premiumCards.push(...IKONG_600.map(p => quoteProductCard(p, data.qty600, "teal")));
+      if (data.qty1200 > 0) premiumCards.push(...IKONG_1200_PREMIUM.map(p => quoteProductCard(p, data.qty1200, "teal")));
+
+      if (premiumCards.length > 0) {
+        blocks.push(`
+          <section class="q-section q-line-section">
+            <div class="q-line-badge">★ 프리미엄 라인업</div>
+            <div class="q-product-grid">${premiumCards.join("")}</div>
+          </section>`);
+      }
+
+      if (data.qty1200 > 0) {
+        blocks.push(`
+          <section class="q-section q-line-section">
+            <div class="q-line-badge pink">★ 리퍼브 라인업</div>
+            <div class="q-refurb-layout">
+              <div class="q-refurb-desc">
+                <b>리퍼브란?</b>
+                생산 과정에 찍힘, 눌림, 색상 차이, 스크래치 등이 일부 발생한 새제품입니다. 기능 효율은 A급과 동일하지만 미관상 단점이 있어 무상 A/S가 적용되지 않습니다.
+              </div>
+              ${IKONG_1200_REFURB.map(p => quoteProductCard(p, data.qty1200, "pink")).join("")}
+              <div class="q-mascot"><img src="./assets/ikongkong-icon.png" alt="" /></div>
+            </div>
+          </section>`);
+      }
+    }
+
+    if (blocks.length === 0) {
+      blocks.push(`
+        <section class="q-section">
+          <div class="q-empty">1200 장수 또는 600 장수를 입력하면 견적 카드가 표시됩니다.</div>
+        </section>`);
+    }
+
+    return blocks.join("");
+  }
+
+  function casaIcon(type) {
+    const common = `viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+    const paths = {
+      user: `<circle cx="12" cy="7.5" r="3.5"/><path d="M5 20c1.2-4.2 4-6.2 7-6.2s5.8 2 7 6.2"/>`,
+      phone: `<path d="M7 4.5 9.3 8.7c.3.6.2 1.2-.3 1.7l-1 1c1.3 2.3 3.1 4.1 5.4 5.4l1-1c.5-.5 1.1-.6 1.7-.3l4.2 2.3c.6.3.9 1 .7 1.6-.5 1.6-1.8 2.4-3.2 2C9.9 19.2 4.8 14.1 2.6 6.2 2.2 4.8 3 3.5 4.6 3c.6-.2 1.1.1 2.4 1.5Z"/>`,
+      pin: `<path d="M20 10c0 5.2-8 11-8 11S4 15.2 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.4"/>`,
+      home: `<path d="m3.5 11 8.5-7 8.5 7"/><path d="M6 10.5V20h12v-9.5"/><path d="M10 20v-5h4v5"/>`,
+      ruler: `<path d="M4 16.5 16.5 4 20 7.5 7.5 20 4 16.5Z"/><path d="m8 16-1.5-1.5m4-1-1.5-1.5m4-1-1.5-1.5m4-1-1.5-1.5"/>`,
+      calendar: `<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>`,
+      tools: `<path d="m14.5 5.5 2-2 4 4-2 2"/><path d="m13.5 6.5 4 4M4 20l7.5-7.5"/><path d="M5 9 3 7l4-4 2 2-1.5 1.5 8 8 1.5-1.5 2 2-4 4-2-2 1.5-1.5-8-8L5 9Z"/>`,
+      gift: `<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M12 9v11M4 13h16"/><path d="M12 9S8 9 8 6.5 12 5 12 9Zm0 0s4 0 4-2.5S12 5 12 9Z"/>`,
+      laptop: `<path d="M5 6.5h14v9H5z"/><path d="M3 18.5h18"/><path d="M8 15.5h8"/>`,
+      cup: `<path d="M6 8h10v5a5 5 0 0 1-10 0V8Z"/><path d="M16 9h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M5 19h12"/><path d="M8 5c.8-.6.8-1.2 0-1.8M12 5c.8-.6.8-1.2 0-1.8"/>`,
+      globe: `<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.3 2.5 3.4 5.5 3.4 9S14.3 18.5 12 21c-2.3-2.5-3.4-5.5-3.4-9S9.7 5.5 12 3Z"/>`,
+      chat: `<path d="M21 11.5a8 8 0 0 1-8 8H8l-5 2 1.8-4.2A8 8 0 1 1 21 11.5Z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/>`,
+      insta: `<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3.2"/><path d="M16.8 7.2h.01"/>`
+    };
+    return `<svg ${common}>${paths[type] || paths.user}</svg>`;
+  }
+
+  function todayDotText() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}.${m}.${day}`;
+  }
+
+  function casaProductCard({ number, name, size, unitPrice, qty }, variant = "") {
+    const total = qty * unitPrice;
+    return `
+      <div class="casa-product-card ${variant}">
+        <div class="casa-product-badge">${number}</div>
+        <div class="casa-product-name">${esc(name)}</div>
+        <div class="casa-product-size">${esc(size)}</div>
+        <div class="casa-product-lines">
+          <div class="casa-product-row"><span>예상장수</span><strong>${formatQty(qty)}</strong></div>
+          <div class="casa-product-row"><span>행사가(장당)</span><strong>${formatWon(unitPrice)}</strong></div>
+          <div class="casa-product-row"><span>예상금액</span><strong>${formatWon(total)}</strong></div>
+        </div>
+        <div class="casa-product-total">
+          <span>총 예상금액</span>
+          <strong>${formatWon(total)}</strong>
+        </div>
+      </div>`;
+  }
+
+  function renderCasaProducts(data) {
+    const products = [
+      { number: "01", name: "클래식 600", size: "60cm × 60cm × 2.2cm", unitPrice: 23000, qty: data.qty600 },
+      { number: "02", name: "클래식 스킨퓨어 600", size: "60cm × 60cm × 2.2cm", unitPrice: 26000, qty: data.qty600 },
+      { number: "03", name: "프리미엄 1200", size: "120cm × 120cm × 2.4cm", unitPrice: 109000, qty: data.qty1200 },
+      { number: "04", name: "스킨퓨어 1200", size: "120cm × 120cm × 2.4cm", unitPrice: 119000, qty: data.qty1200 },
+    ];
+
+    if (data.optCasaRefurb) {
+      products.push(
+        {
+          number: "05",
+          name: CASA_REFURB[0].name,
+          size: CASA_REFURB[0].size,
+          unitPrice: CASA_REFURB[0].unitPrice,
+          qty: data.qty1200
+        },
+        {
+          number: "06",
+          name: CASA_REFURB[1].name,
+          size: CASA_REFURB[1].size,
+          unitPrice: CASA_REFURB[1].unitPrice,
+          qty: data.qty1200
+        }
+      );
+    }
+
+    return `<div class="casa-product-grid${data.optCasaRefurb ? " has-refurb" : ""}">${products.map(casaProductCard).join("")}</div>`;
+  }
+
+  function renderCasaRooms(data) {
+    if (!data.optRooms || !Array.isArray(data.rooms) || data.rooms.length === 0) return "";
+
+    const roomRows = data.rooms.map((room) => `
+      <tr>
+        <td>${esc(room.name)}</td>
+        <td>${formatQty(room.qty)}</td>
+        <td>
+          <strong class="casa-room-price">${formatWon(room.qty * 23000)}</strong>
+          <span class="casa-room-unit">장당 23,000원</span>
+        </td>
+        <td>
+          <strong class="casa-room-price">${formatWon(room.qty * 26000)}</strong>
+          <span class="casa-room-unit">장당 26,000원</span>
+        </td>
+      </tr>`).join("");
+
+    return `
+      <section class="casa-room-section">
+        <div class="casa-room-heading">
+          <h3>방 추가 견적</h3>
+          <p class="casa-room-note">방은 구조상 재단이 많아 600 사이즈 기준으로 견적됩니다.</p>
+        </div>
+        <table class="casa-room-table">
+          <thead>
+            <tr>
+              <th>시공 공간</th>
+              <th>예상장수</th>
+              <th>클래식 600<br><span class="casa-room-unit">60cm × 60cm</span></th>
+              <th>클래식 스킨퓨어 600<br><span class="casa-room-unit">60cm × 60cm</span></th>
+            </tr>
+          </thead>
+          <tbody>${roomRows}</tbody>
+        </table>
+      </section>`;
+  }
+
+  function renderCasaReviewBanner() {
+    return `
+      <section class="casa-review-banner">
+        <div class="casa-review-emblem">
+          <div class="casa-review-medal">${casaIcon("gift")}<span>리뷰이벤트</span></div>
+        </div>
+        <div class="casa-review-total"><strong>총 9만원</strong><span>페이백 혜택</span></div>
+        <div class="casa-review-item">${casaIcon("laptop")}<span>블로그<br>3만원</span></div>
+        <div class="casa-review-item">${casaIcon("cup")}<span>카페<br>3만원</span></div>
+        <div class="casa-review-item">${casaIcon("insta")}<span>인스타<br>3만원</span></div>
+      </section>`;
+  }
+
+  function renderCasaEstimate(data) {
+    const areasValue = getAreasValue(data.areasPreset, data.areasCustom);
+    const pyeongLine = data.pyeongType ? `${data.pyeongType} (${data.extension})` : (data.extension || "-");
+    const planSection = data.casaPlanImageSrc ? `
+      <section class="casa-plan-section">
+        <div class="casa-plan-copy">
+          <div class="casa-section-kicker">✦</div>
+          <h3>시공 범위 도면</h3>
+          <p>공간별 최적의 시공을 위한 정확한 범위와 동선을 확인하세요.</p>
+        </div>
+        <div class="casa-plan-frame"><img src="${esc(data.casaPlanImageSrc)}" alt="시공 범위 도면" style="transform:scale(${data.casaPlanImageScale / 100})" /></div>
+      </section>` : "";
+
+    const notices = [
+      "예상 수량은 다수의 시공 데이터 및 온라인 도면 기준으로 산출된 수량이며, 실제 시공 시 현장 구조에 따라 차이가 있을 수 있습니다.",
+      "결제는 실제 시공 후 사용된 수량 기준으로 진행됩니다.",
+      "계약금은 없으며, 스케줄 배정 후 시공 당일 결제가 진행됩니다.",
+      "해당 견적은 계좌이체 기준이며, 현금영수증 및 세금계산서 발행 가능합니다.",
+      "카드결제 및 세금계산서 발행 시 VAT는 별도 안내드립니다.",
+      "프로모션 혜택은 시공일이 아닌 예약일 기준으로 적용됩니다.",
+      "전문 시공 서비스 및 출장비는 전액 무료입니다."
+    ];
+
+    return `
+      <div class="casa-estimate">
+        <div class="casa-inner">
+          <header class="casa-header">
+            <div class="casa-logo-area">
+              <img class="casa-leaf" src="./assets/casafloa-leaf.png" alt="" onerror="this.style.display='none'" />
+              <h1 class="casa-brand">CASAFLOA</h1>
+              <div class="casa-korean">까사플로아</div>
+            </div>
+          </header>
+
+          <section class="casa-info-card">
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("user")}</div><div><div class="casa-info-label">고객명</div><div class="casa-info-value">${esc(customerDisplayName(data.customerName))}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("phone")}</div><div><div class="casa-info-label">연락처</div><div class="casa-info-value">${esc(data.phone || "카카오톡 채널 문의")}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("home")}</div><div><div class="casa-info-label">시공공간 / 시공범위</div><div class="casa-info-value">${esc(formatAreasPreset(areasValue))}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("pin")}</div><div><div class="casa-info-label">주소</div><div class="casa-info-value">${esc(data.siteName || "-")}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("calendar")}</div><div><div class="casa-info-label">견적일</div><div class="casa-info-value">${todayDotText()}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("ruler")}</div><div><div class="casa-info-label">평형타입 / 면적</div><div class="casa-info-value">${esc(pyeongLine)}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("tools")}</div><div><div class="casa-info-label">시공방식</div><div class="casa-info-value">본사 전문가시공 무료 제공</div></div></div>
+          </section>
+
+          ${planSection}
+
+          <section class="casa-product-section">
+            <div class="casa-section-title"><h3>제품별 예상 견적</h3></div>
+            ${renderCasaProducts(data)}
+          </section>
+
+          ${renderCasaRooms(data)}
+          ${renderCasaReviewBanner()}
+
+          <section class="casa-notice">
+            <div class="casa-notice-title">
+              <h3>안내<br>사항</h3>
+              <ul>${notices.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>
+            </div>
+            <aside class="casa-color-card">
+              <h4>컬러 안내</h4>
+              <p><b>클래식 / 프리미엄</b><br>크림톤, 베이지, 그레이</p>
+              <p><b>스킨퓨어</b><br>베이지</p>
+            </aside>
+          </section>
+        </div>
+
+      </div>`;
+  }
+
+  function renderQuotePreview(data) {
+    const sheet = $("quoteSheet");
+    if (!sheet) return;
+
+    if (currentTemplate === "casa") {
+      sheet.innerHTML = renderCasaEstimate(data);
+      queuePreviewScale();
+      return;
+    }
+
+    if (currentTemplate !== "ikong") {
+      sheet.innerHTML = `<div class="q-casa-empty">선택한 브랜드의 이미지 견적서를 준비 중입니다.</div>`;
+      queuePreviewScale();
+      return;
+    }
+
+    const areasValue = getAreasValue(data.areasPreset, data.areasCustom);
+    const pyeongLine = data.pyeongType ? `${data.pyeongType} (${data.extension})` : (data.extension || "-");
+    const promotion = ikongMode === "pick" ? "띠내언니 PICK 혜택" : "박람회 행사가 적용";
+
+    sheet.innerHTML = `
+      <header class="q-hero">
+        <img class="q-logo" src="./assets/ikongkong-logo.png" alt="아이콩콩" />
+      </header>
+
+      <section class="q-section">
+        <div class="q-info-card">
+          <div class="q-info-grid">
+            <div class="q-info-item">${qIcon("user")}<div class="q-label">고객명</div><div class="q-value">${esc(customerDisplayName(data.customerName))}</div></div>
+            <div class="q-info-item">${qIcon("pin")}<div class="q-label">지역</div><div class="q-value">${esc(data.siteName || "-")}</div></div>
+            <div class="q-info-item">${qIcon("home")}<div class="q-label">시공범위</div><div class="q-value">${esc(formatAreasPreset(areasValue))}</div></div>
+            <div class="q-info-item">${qIcon("phone")}<div class="q-label">연락처</div><div class="q-value">${esc(data.phone || "카카오톡 채널 문의")}</div></div>
+            <div class="q-info-item">${qIcon("ruler", true)}<div class="q-label">평형</div><div class="q-value">${esc(pyeongLine)}</div></div>
+            <div class="q-info-item">${qIcon("tools", true)}<div class="q-label">프로모션</div><div class="q-value">${esc(promotion)}</div></div>
+          </div>
+        </div>
+
+        <div class="q-premium-note">
+          <div class="q-note-icon">${qIcon("diamond")}</div>
+          <p>
+            아이콩콩매트는 독일 3사로 불리는 벤츠, 아우디, BMW 등에 최고급 원료를 납품하는 국내 원료사의<br>
+            <b>프리미엄 소재</b>를 공급받아 생산된 층간소음매트입니다.<br>
+            일반적인 매트와 달리 원료 단계부터 차별화된 품질을 적용하여, 탄탄한 내구성은 물론<br>
+            생활 속에서 오래 사용할 수 있는 안정성과 완성도를 높인 프리미엄 시공매트입니다.
+          </p>
+        </div>
+      </section>
+
+      ${renderLineupsVisual(data)}
+      ${renderRoomsVisual(data)}
+
+      <section class="q-section q-notice-section">
+        <div class="q-notice-grid">
+          <div class="q-notice-item">${qIcon("truck", true)}<div>공간 2곳 이상 시 전문 시공비 / 출장비는 0원으로 무상 제공됩니다.<br>거실만 시공 시에는 별도 출장비 100,000원 발생되는 점 참조 부탁드립니다.</div></div>
+          <div class="q-notice-item">${qIcon("shield", true)}<div>아이콩콩매트는 제조 기반의 기업으로 파생되었으며,<br>수년간 다양한 브랜드에 납품 경험을 바탕으로 검증된 기술과 특허를 통해 높은 품질을 자랑합니다.</div></div>
+          <div class="q-notice-item">${qIcon("calc", true)}<div>견적상 예상 장수는 시공 시 변경될 수 있으며,<br>사용된 장수만큼 카운터해 후불로 최종 결제 진행됩니다.</div></div>
+          <div class="q-notice-item">${qIcon("pin", true)}<div>전국 10개 지사를 바탕으로 고객님이 계신 어느 곳이든,<br>빠른 시공 스케줄을 배정해드리며 전문 기사님들이 방문해 시공을 완료해드립니다.</div></div>
+          <div class="q-notice-item">${qIcon("card", true)}<div>안내해드린 가격은 현금 결제, 이체 결제 시 적용되는 가격입니다.<br>카드 결제 시 VAT가 별도 발생되는 점 참조 부탁드립니다.</div></div>
+          <div class="q-notice-item">${qIcon("heart", true)}<div>무상 A/S 기간은 시공일로부터 6개월 적용되며,<br>시공상의 기술 하자 부분은 기간 제한 없이 빠른 A/S 대응을 드립니다.</div></div>
+        </div>
+      </section>
+
+      <footer class="q-footer">
+        <span class="star">★</span>
+        아이와 함께하는 모든 순간, <b>아이콩콩</b>이 함께 지켜드립니다.
+        <span class="star">★</span>
+      </footer>`;
+    queuePreviewScale();
+  }
+
+  function updatePreviewScale() {
+    const sheet = $("quoteSheet");
+    const scaleEl = $("quoteScale");
+    const wrap = sheet?.closest(".quote-wrap");
+    if (!sheet || !scaleEl || !wrap) return;
+
+    const style = getComputedStyle(wrap);
+    const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const available = Math.max(320, wrap.clientWidth - padX);
+    const scale = Math.min(1, available / 1024);
+
+    scaleEl.style.setProperty("--preview-scale", String(scale));
+    wrap.style.height = `${Math.ceil(sheet.offsetHeight * scale + padY)}px`;
+  }
+
+  function queuePreviewScale() {
+    requestAnimationFrame(() => {
+      updatePreviewScale();
+      $("quoteSheet")?.querySelectorAll("img").forEach((img) => {
+        if (!img.complete) img.addEventListener("load", updatePreviewScale, { once: true });
+      });
+      requestAnimationFrame(updatePreviewScale);
+    });
+  }
+
+  async function captureQuoteCanvas() {
+    if (!window.html2canvas) throw new Error("html2canvas가 로드되지 않았습니다.");
+    const sheet = $("quoteSheet");
+    if (!sheet) throw new Error("견적서 영역을 찾지 못했습니다.");
+    if (document.fonts?.ready) await document.fonts.ready;
+    const scaleEl = $("quoteScale");
+    const wrap = sheet.closest(".quote-wrap");
+    const previousScale = scaleEl?.style.getPropertyValue("--preview-scale") || "";
+    const previousHeight = wrap?.style.height || "";
+
+    if (scaleEl) scaleEl.style.setProperty("--preview-scale", "1");
+    if (wrap) wrap.style.height = "auto";
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    try {
+      return await html2canvas(sheet, {
+        backgroundColor: "#ffffff",
+        scale: Math.min(3, Math.max(2, window.devicePixelRatio || 2)),
+        useCORS: true,
+        logging: false
+      });
+    } finally {
+      if (scaleEl) {
+        if (previousScale) scaleEl.style.setProperty("--preview-scale", previousScale);
+        else scaleEl.style.removeProperty("--preview-scale");
+      }
+      if (wrap) wrap.style.height = previousHeight;
+      queuePreviewScale();
+    }
+  }
+
+  function canvasToBlob(canvas) {
+    return new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1));
+  }
+
+  function downloadBlob(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function quoteFileName() {
+    const data = collectInput();
+    const name = (data.customerName && data.customerName !== "고객") ? data.customerName : "고객";
+    const safeName = name.replace(/[\\/:*?"<>|]/g, "").trim() || "고객";
+    return `ikongkong-estimate-${safeName}.png`;
+  }
+
+  async function copyQuoteImage() {
+    try {
+      generate();
+      const canvas = await captureQuoteCanvas();
+      const blob = await canvasToBlob(canvas);
+      if (!blob) throw new Error("PNG 생성에 실패했습니다.");
+
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        setStatus("이미지 복사 완료", true);
+      } else {
+        downloadBlob(blob, quoteFileName());
+        setStatus("브라우저 제한으로 PNG 저장했습니다", true);
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("이미지 복사 실패: PNG 저장을 사용해주세요", false);
+    }
+  }
+
+  async function downloadQuoteImage() {
+    try {
+      generate();
+      const canvas = await captureQuoteCanvas();
+      const blob = await canvasToBlob(canvas);
+      if (!blob) throw new Error("PNG 생성에 실패했습니다.");
+      downloadBlob(blob, quoteFileName());
+      setStatus("PNG 저장 완료", true);
+    } catch (err) {
+      console.error(err);
+      setStatus("PNG 저장 실패", false);
+    }
+  }
+
+  // =========================
   // 5) 템플릿 전환/생성/복사/초기화
   // =========================
   let currentTemplate = "ikong"; // "ikong" | "casa"
@@ -739,7 +2583,7 @@ ${noticeBody}`.trim();
   function updateIkongModeUI() {
     const wrap = $("ikongModeWrap");
     const isIkong = currentTemplate === "ikong";
-    if (wrap) wrap.style.display = isIkong ? "flex" : "none";
+    if (wrap) wrap.style.display = isIkong ? "grid" : "none";
 
     $("btnModeNormal")?.classList.toggle("active", ikongMode === "normal");
     $("btnModePick")?.classList.toggle("active", ikongMode === "pick");
@@ -748,11 +2592,15 @@ ${noticeBody}`.trim();
   function setTemplate(tpl) {
     currentTemplate = tpl;
     const isIkong = tpl === "ikong";
+    const isCasa = tpl === "casa";
     $("btnTplIkong").classList.toggle("active", isIkong);
     $("btnTplCasa").classList.toggle("active", !isIkong);
     $("tplLabel").textContent = isIkong ? "아이콩콩" : "까사플로아";
     document.body.classList.toggle("template-ikong", isIkong);
     document.body.classList.toggle("template-casa", !isIkong);
+    if ($("reviewWrap")) $("reviewWrap").style.display = isCasa ? "flex" : "none";
+    if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = isCasa ? "flex" : "none";
+    if ($("casaPlanWrap")) $("casaPlanWrap").style.display = isCasa ? "flex" : "none";
 
     updateIkongModeUI();
     generate();
@@ -762,6 +2610,7 @@ ${noticeBody}`.trim();
     const data = collectInput();
     const out = (currentTemplate === "ikong") ? buildIkongkong(data) : buildCasaflora(data);
     $("output").value = out;
+    renderQuotePreview(data);
     setStatus("생성 완료", true);
   }
 
@@ -801,10 +2650,15 @@ ${noticeBody}`.trim();
 
     // 리뷰 이벤트
     $("optReview").checked = false;
+    $("casaRefurbToggle").checked = false;
+    clearCasaPlanImage(false);
+    if ($("casaPlanScale")) $("casaPlanScale").value = "100";
+    if ($("casaPlanScaleValue")) $("casaPlanScaleValue").textContent = "100%";
 
     $("output").value = "";
     update600Hint();
     renderRoomAddButton();
+    renderQuotePreview(collectInput());
     setStatus("초기화 완료", true);
   }
 
@@ -823,7 +2677,10 @@ ${noticeBody}`.trim();
   // =========================
   $("btnGenerate").addEventListener("click", generate);
   $("btnCopy").addEventListener("click", copyOutput);
+  $("btnCopyImage").addEventListener("click", copyQuoteImage);
+  $("btnDownloadImage")?.addEventListener("click", downloadQuoteImage);
   $("btnClear").addEventListener("click", clearAll);
+  window.addEventListener("resize", updatePreviewScale);
 
   $("btnTplIkong").addEventListener("click", () => setTemplate("ikong"));
   $("btnTplCasa").addEventListener("click", () => setTemplate("casa"));
@@ -842,6 +2699,10 @@ ${noticeBody}`.trim();
 
   $("qty1200").addEventListener("input", () => { update600Hint(); generate(); });
   $("qty600").addEventListener("input", generate);
+  ["customerName", "phone", "siteName", "pyeongType"].forEach((id) => {
+    $(id)?.addEventListener("input", generate);
+  });
+  $("extension")?.addEventListener("change", generate);
   $("areasPreset").addEventListener("change", generate);
   $("areasCustom").addEventListener("input", generate);
 
@@ -864,10 +2725,63 @@ ${noticeBody}`.trim();
 
   // ✅ 리뷰 이벤트 (까사에서만 출력되지만, 입력 변경 시 재생성)
   $("optReview")?.addEventListener("change", generate);
+  $("casaRefurbToggle")?.addEventListener("change", generate);
+
+  function setCasaPlanStatus(message, tone = "") {
+    const status = $("casaPlanStatus");
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle("success", tone === "success");
+    status.classList.toggle("error", tone === "error");
+  }
+
+  function clearCasaPlanImage(shouldGenerate = true) {
+    casaPlanImageLoadToken += 1;
+    if (casaPlanImageSrc) URL.revokeObjectURL(casaPlanImageSrc);
+    casaPlanImageSrc = "";
+    if ($("casaPlanImage")) $("casaPlanImage").value = "";
+    setCasaPlanStatus("이미지를 넣지 않으면 견적서에서 이미지 영역이 보이지 않습니다.");
+    if (shouldGenerate) generate();
+  }
+
+  function loadCasaPlanImage(file) {
+    if (!file) {
+      clearCasaPlanImage();
+      return;
+    }
+
+    if (file.type && !file.type.startsWith("image/")) {
+      clearCasaPlanImage(false);
+      setCasaPlanStatus("이미지 파일만 업로드할 수 있습니다.", "error");
+      return;
+    }
+
+    casaPlanImageLoadToken += 1;
+    if (casaPlanImageSrc) URL.revokeObjectURL(casaPlanImageSrc);
+    casaPlanImageSrc = URL.createObjectURL(file);
+    setCasaPlanStatus(`${file.name} · 업로드 완료`, "success");
+    generate();
+  }
+
+  $("casaPlanImage")?.addEventListener("change", (event) => {
+    loadCasaPlanImage(event.target.files[0]);
+  });
+  $("casaPlanScale")?.addEventListener("input", (event) => {
+    if ($("casaPlanScaleValue")) $("casaPlanScaleValue").textContent = `${event.target.value}%`;
+    generate();
+  });
+  $("casaPlanClear")?.addEventListener("click", () => {
+    $("casaPlanImage").value = "";
+    loadCasaPlanImage(null);
+    setStatus("이미지를 제거했습니다.", true);
+  });
 
   // 최초 로드
   update600Hint();
   updateIkongModeUI();
+  if ($("reviewWrap")) $("reviewWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
+  if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
+  if ($("casaPlanWrap")) $("casaPlanWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
   setRoomsUIEnabled(false);
   renderRoomAddButton();
   generate();
