@@ -16,6 +16,10 @@
       --panel: #ffffff;
     }
 
+    html {
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+    }
     * { box-sizing: border-box; }
 
     body {
@@ -308,6 +312,8 @@
       background:#fff;
       color:#202020;
       border-radius: 0;
+      -webkit-text-size-adjust:none;
+      text-size-adjust:none;
       box-shadow: 0 14px 36px rgba(15, 23, 42, .07);
       overflow: hidden;
       border: 1px solid var(--line);
@@ -1367,17 +1373,6 @@
       width: 23px;
       height: 23px;
       stroke: var(--casa-ink);
-    }
-
-    @media (max-width: 900px) {
-      .casa-estimate { width: 1024px; }
-      .casa-product-grid { grid-template-columns: repeat(2, 1fr); }
-      .casa-product-grid.has-refurb { grid-template-columns: repeat(2, 1fr); }
-      .casa-plan-section { grid-template-columns: 1fr; }
-      .casa-refurb-layout { grid-template-columns: 1fr; }
-      .casa-room-heading { align-items:flex-start; flex-direction:column; }
-      .casa-room-note { text-align:left; }
-      .casa-notice { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 900px) {
