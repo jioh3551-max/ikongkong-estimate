@@ -2576,36 +2576,64 @@ ${noticeBody}`.trim();
 
   async function captureQuoteCanvas() {
     if (!window.html2canvas) throw new Error("html2canvas가 로드되지 않았습니다.");
-    const sheet = $("quoteSheet");
-    if (!sheet) throw new Error("견적서 영역을 찾지 못했습니다.");
     if (document.fonts?.ready) await document.fonts.ready;
-    const previewStack = document.querySelector(".preview-stack");
-    const previewWasHidden = previewStack && getComputedStyle(previewStack).display === "none";
-    const scaleEl = $("quoteScale");
-    const wrap = sheet.closest(".quote-wrap");
-    const previousScale = scaleEl?.style.getPropertyValue("--preview-scale") || "";
-    const previousHeight = wrap?.style.height || "";
-
-    if (previewWasHidden) previewStack.classList.add("capture-active");
-    if (scaleEl) scaleEl.style.setProperty("--preview-scale", "1");
-    if (wrap) wrap.style.height = "auto";
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    const source = $("quoteSheet");
+    if (!source) throw new Error("견적서 영역을 찾지 못했습니다.");
+    const host = document.createElement("div");
+    const captureSheet = source.cloneNode(true);
+    captureSheet.id = "quoteSheetCapture";
+    Object.assign(host.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      zIndex: "-2147483647",
+      width: "1024px",
+      background: "#ffffff",
+      pointerEvents: "none"
+    });
+    Object.assign(captureSheet.style, {
+      width: "1024px",
+      maxWidth: "none",
+      margin: "0",
+      transform: "none",
+      webkitTextSizeAdjust: "100%",
+      textSizeAdjust: "100%"
+    });
+    host.appendChild(captureSheet);
+    document.body.appendChild(host);
+    await Promise.all(Array.from(captureSheet.querySelectorAll("img")).map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", resolve, { once: true });
+      });
+    }));
 
     try {
-      return await html2canvas(sheet, {
+      const captureHeight = Math.ceil(captureSheet.scrollHeight);
+      return await html2canvas(captureSheet, {
         backgroundColor: "#ffffff",
-        scale: Math.min(3, Math.max(2, window.devicePixelRatio || 2)),
+        scale: 2,
+        width: 1024,
+        height: captureHeight,
+        windowWidth: 1200,
+        windowHeight: Math.max(1400, captureHeight),
+        scrollX: 0,
+        scrollY: 0,
         useCORS: true,
-        logging: false
+        logging: false,
+        onclone: (clonedDocument) => {
+          const clonedSheet = clonedDocument.getElementById("quoteSheetCapture");
+          if (!clonedSheet) return;
+          clonedSheet.style.width = "1024px";
+          clonedSheet.style.maxWidth = "none";
+          clonedSheet.style.transform = "none";
+          clonedSheet.style.webkitTextSizeAdjust = "100%";
+          clonedSheet.style.textSizeAdjust = "100%";
+        }
       });
     } finally {
-      if (scaleEl) {
-        if (previousScale) scaleEl.style.setProperty("--preview-scale", previousScale);
-        else scaleEl.style.removeProperty("--preview-scale");
-      }
-      if (wrap) wrap.style.height = previousHeight;
-      if (previewWasHidden) previewStack.classList.remove("capture-active");
-      queuePreviewScale();
+      host.remove();
     }
   }
 
@@ -2621,7 +2649,34 @@ ${noticeBody}`.trim();
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  function quoteBlobPromise() {
+    return captureQuoteCanvas()
+      .then(canvasToBlob)
+      .then((blob) => {
+        if (!blob) throw new Error("PNG 생성에 실패했습니다.");
+        return blob;
+      });
+  }
+
+  async function shareImageBlob(blob, fileName) {
+    if (!navigator.share || !navigator.canShare || typeof File === "undefined") return false;
+    const file = new File([blob], fileName, { type: "image/png" });
+    if (!navigator.canShare({ files: [file] })) return false;
+    try {
+      await navigator.share({ files: [file], title: "견적서 이미지" });
+      return true;
+    } catch (error) {
+      console.warn("Image sharing unavailable", error);
+      return false;
+    }
+  }
+
+  function isAppleMobile() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   }
 
   function quoteFileName() {
@@ -2641,31 +2696,40 @@ ${noticeBody}`.trim();
   }
 
   async function copyQuoteImage() {
+    generate();
+    const blobPromise = quoteBlobPromise();
     try {
-      generate();
-      const canvas = await captureQuoteCanvas();
-      const blob = await canvasToBlob(canvas);
-      if (!blob) throw new Error("PNG 생성에 실패했습니다.");
-
       if (navigator.clipboard && window.ClipboardItem) {
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blobPromise })]);
         setStatus("이미지 복사 완료", true);
+        return;
+      }
+    } catch (err) {
+      console.warn("Clipboard image copy unavailable", err);
+    }
+
+    try {
+      const blob = await blobPromise;
+      if (await shareImageBlob(blob, quoteFileName())) {
+        setStatus("이미지 공유창을 열었습니다", true);
       } else {
         downloadBlob(blob, quoteFileName());
-        setStatus("브라우저 제한으로 PNG 저장했습니다", true);
+        setStatus("복사 미지원 브라우저라 PNG로 저장했습니다", true);
       }
     } catch (err) {
       console.error(err);
-      setStatus("이미지 복사 실패: PNG 저장을 사용해주세요", false);
+      setStatus("이미지 생성에 실패했습니다", false);
     }
   }
 
   async function downloadQuoteImage() {
     try {
       generate();
-      const canvas = await captureQuoteCanvas();
-      const blob = await canvasToBlob(canvas);
-      if (!blob) throw new Error("PNG 생성에 실패했습니다.");
+      const blob = await quoteBlobPromise();
+      if (isAppleMobile() && await shareImageBlob(blob, quoteFileName())) {
+        setStatus("공유 메뉴에서 이미지 저장을 선택해주세요", true);
+        return;
+      }
       downloadBlob(blob, quoteFileName());
       setStatus("PNG 저장 완료", true);
     } catch (err) {
