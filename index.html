@@ -694,20 +694,22 @@
     }
 
     .casa-estimate {
-      --casa-ink: #2f251f;
-      --casa-text: #6b5a4c;
-      --casa-muted: #8a7a6a;
-      --casa-gold: #b88a45;
-      --casa-gold-2: #d8bd84;
-      --casa-line: #e7d6bd;
-      --casa-cream: #fff8ed;
-      --casa-soft: #fbf0df;
+      --casa-ink: #28231f;
+      --casa-text: #514842;
+      --casa-muted: #8b8177;
+      --casa-gold: #b8915b;
+      --casa-gold-2: #d7be8b;
+      --casa-line: #eadfce;
+      --casa-cream: #fffdf8;
+      --casa-soft: #f7f1e8;
       width: 1024px;
       min-height: 1420px;
       position: relative;
       overflow: hidden;
       color: var(--casa-ink);
-      background: #fff8ed;
+      background:
+        radial-gradient(circle at 16% 4%, rgba(216, 189, 132, .18), transparent 30%),
+        linear-gradient(180deg, #fffdf8 0%, #fbf5ec 100%);
       font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     }
     .casa-estimate::before {
@@ -717,7 +719,7 @@
       top:-130px;
       width:360px;
       height:260px;
-      border:1px solid rgba(184, 138, 69, .28);
+      border:1px solid rgba(184, 138, 69, .16);
       border-radius:50%;
       transform: rotate(-22deg);
     }
@@ -728,27 +730,27 @@
       bottom:36px;
       width:250px;
       height:250px;
-      border:1px solid rgba(184, 138, 69, .16);
+      border:1px solid rgba(184, 138, 69, .10);
       border-radius:50%;
     }
     .casa-inner {
       position:relative;
       z-index:1;
-      padding: 32px 38px 0;
+      padding: 26px 38px 0;
     }
     .casa-header {
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 0 18px 24px;
+      padding: 0 18px 18px;
     }
     .casa-logo-area {
       text-align:center;
       width:100%;
     }
     .casa-leaf {
-      width: 70px;
-      height: 70px;
+      width: 62px;
+      height: 62px;
       object-fit: contain;
       display:block;
       margin: 0 auto -2px;
@@ -756,52 +758,64 @@
     .casa-brand {
       margin: 0;
       letter-spacing: .18em;
-      font-size: 46px;
+      font-size: 42px;
       line-height: 1;
       font-family: "Cormorant Garamond", "Times New Roman", serif;
       font-weight: 600;
       color: var(--casa-ink);
     }
     .casa-korean {
-      margin-top: 10px;
+      margin-top: 8px;
       color: var(--casa-muted);
-      font-size: 15px;
+      font-size: 13px;
       letter-spacing: .42em;
       font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     }
     .casa-info-card {
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 0;
-      padding: 12px 18px;
-      border: 1px solid rgba(184, 138, 69, .32);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, .82);
-      box-shadow: 0 16px 30px rgba(86, 61, 38, .10);
+      padding: 8px 10px;
+      border: 1px solid rgba(184, 138, 69, .24);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .74);
+      box-shadow: 0 8px 18px rgba(59, 48, 38, .045);
     }
     .casa-info-item {
       display:grid;
-      grid-template-columns: 54px 1fr;
-      gap: 14px;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 7px;
       align-items:center;
-      min-height: 76px;
-      padding: 8px 18px;
-      border-right: 1px dashed rgba(184, 138, 69, .30);
+      min-height: 36px;
+      padding: 6px 9px;
+      border-right: 1px solid rgba(184, 138, 69, .18);
+      border-bottom: 1px solid rgba(184, 138, 69, .16);
     }
-    .casa-info-item:nth-child(3n) { border-right: 0; }
+    .casa-info-item:nth-child(3n) { border-right: 1px solid rgba(184, 138, 69, .18); }
+    .casa-info-item:nth-child(4n) { border-right: 0; }
+    .casa-info-item:nth-child(7) { border-right: 0; }
+    .casa-info-item:nth-child(n+5) { border-bottom: 0; }
+    .casa-info-wide { grid-column: span 2; }
+    .casa-info-item > div:not(.casa-info-icon) {
+      display:grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 7px;
+      align-items:baseline;
+      min-width:0;
+    }
     .casa-info-icon {
-      width: 46px;
-      height: 46px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      background: #f5edde;
+      background: #f7f1e8;
       color: var(--casa-ink);
       display:flex;
       align-items:center;
       justify-content:center;
     }
     .casa-info-icon svg {
-      width: 26px;
-      height: 26px;
+      width: 14px;
+      height: 14px;
       stroke: currentColor;
     }
     .casa-estimate svg {
@@ -810,19 +824,23 @@
       flex: none;
     }
     .casa-info-label {
-      color: var(--casa-ink);
+      color: #8a7a6a;
       font-family: inherit;
-      font-size: 13px;
+      font-size: 10.5px;
       font-weight: 800;
-      margin-bottom: 4px;
+      margin-bottom: 0;
+      white-space:nowrap;
     }
     .casa-info-value {
       color: var(--casa-ink);
       font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.45;
+      font-size: 12.8px;
+      font-weight: 800;
+      line-height: 1.28;
       word-break: keep-all;
+    }
+    .casa-info-wide .casa-info-value {
+      overflow-wrap:anywhere;
     }
     .casa-plan-section {
       display:grid;
@@ -845,10 +863,10 @@
     .casa-notice h3 {
       margin: 0;
       color: var(--casa-ink);
-      font-family: "Noto Serif KR", "Nanum Myeongjo", "Batang", serif;
-      font-size: 30px;
-      letter-spacing: .12em;
-      font-weight: 700;
+      font-family: inherit;
+      font-size: 27px;
+      letter-spacing: .04em;
+      font-weight: 850;
     }
     .casa-plan-copy p {
       margin: 16px 0 0;
@@ -992,15 +1010,15 @@
       border: 1px solid rgba(184, 138, 69, .34);
       border-radius: 16px;
       overflow:hidden;
-      background: #fff6e8;
-      box-shadow: 0 12px 24px rgba(86, 61, 38, .08);
+      background: rgba(255, 253, 248, .92);
+      box-shadow: 0 10px 22px rgba(59, 48, 38, .06);
       text-align:left;
     }
     .casa-product-card:nth-child(odd) .casa-product-total {
       background: #2b231e;
     }
     .casa-product-card:nth-child(even) .casa-product-total {
-      background: #a87835;
+      background: #b8863f;
     }
     .casa-product-badge {
       position:absolute;
@@ -1090,6 +1108,144 @@
       line-height: 1.08;
       letter-spacing: .01em;
       white-space: nowrap;
+    }
+    .casa-product-table-wrap {
+      overflow:hidden;
+      border: 1px solid rgba(184, 145, 91, .24);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .72);
+      box-shadow: 0 12px 24px rgba(59, 48, 38, .06);
+    }
+    .casa-product-table {
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      table-layout:fixed;
+      font-family:inherit;
+      color:var(--casa-ink);
+    }
+    .casa-product-table th,
+    .casa-product-table td {
+      border-right:1px solid rgba(184, 145, 91, .18);
+      border-bottom:1px solid rgba(184, 145, 91, .18);
+      text-align:center;
+      vertical-align:middle;
+    }
+    .casa-product-table th:last-child,
+    .casa-product-table td:last-child { border-right:0; }
+    .casa-product-table tr:last-child td { border-bottom:0; }
+    .casa-product-table thead th {
+      padding: 16px 8px 14px;
+      background: rgba(248, 242, 232, .92);
+      vertical-align:top;
+    }
+    .casa-product-table .casa-row-head {
+      width: 110px;
+      background: rgba(248, 242, 232, .88);
+      color:#75675b;
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: -.01em;
+    }
+    .casa-product-table td {
+      padding: 13px 8px;
+      font-size: 15px;
+      font-weight: 700;
+      line-height:1.35;
+      background: rgba(255, 253, 248, .86);
+      white-space:nowrap;
+    }
+    .casa-product-table .casa-product-head {
+      min-height: 92px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      gap: 4px;
+    }
+    .casa-product-table .casa-product-head strong {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height: 32px;
+      color:#2d2924;
+      font-size: 15px;
+      font-weight: 900;
+      line-height:1.22;
+      letter-spacing:-.02em;
+      word-break:keep-all;
+    }
+    .casa-product-table .casa-product-head em {
+      color:#827366;
+      font-style:normal;
+      font-size: 11.5px;
+      font-weight: 750;
+      line-height:1.25;
+      white-space:normal;
+      word-break:keep-all;
+    }
+    .casa-product-table .casa-product-chip {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:30px;
+      height:20px;
+      padding:0 8px;
+      border-radius:999px;
+      color:#fff;
+      background:#b8915b;
+      font-size:11px;
+      font-weight:900;
+      line-height:1;
+    }
+    .casa-product-table .casa-refurb-chip {
+      display:inline-flex;
+      margin-top:2px;
+      padding:2px 7px;
+      border-radius:999px;
+      color:#876333;
+      background:#fff8ea;
+      border:1px solid rgba(184, 145, 91, .28);
+      font-size:10.5px;
+      font-weight:850;
+      line-height:1.1;
+    }
+    .casa-product-table .casa-muted-cell {
+      color:#6f6257;
+      font-size:13px;
+      font-weight:750;
+    }
+    .casa-product-table .casa-total-row td {
+      padding: 16px 8px;
+      background:#efe4d4;
+      color:#2b211c;
+      font-size: 20px;
+      font-weight: 950;
+    }
+    .casa-product-table .casa-total-row .casa-row-head {
+      color:#4f3e30;
+      background:#e8dbc8;
+      font-size:15px;
+    }
+    .casa-product-table.is-wide .casa-row-head {
+      width: 92px;
+      font-size:12px;
+    }
+    .casa-product-table.is-wide .casa-product-head strong {
+      font-size:13px;
+      line-height:1.24;
+      min-height:32px;
+    }
+    .casa-product-table.is-wide .casa-product-head em {
+      font-size:10px;
+    }
+    .casa-product-table.is-wide td {
+      padding-left:5px;
+      padding-right:5px;
+      font-size:13px;
+    }
+    .casa-product-table.is-wide .casa-total-row td {
+      font-size:17px;
     }
     .casa-review-banner {
       display:grid;
@@ -1722,6 +1878,14 @@ ${CASA_FREE_SERVICE_LINE}
     return areasPreset || "";
   }
 
+  function isLivingOnlyArea(value) {
+    return String(value || "").replace(/\s+/g, "") === "거실";
+  }
+
+  function casaInstallMethodText(areasValue) {
+    return isLivingOnlyArea(areasValue) ? "본사 전문가시공" : "본사 전문가시공 무료 제공";
+  }
+
   // ✅ 텍스트 취소선(카톡/텍스트용): 유니코드 결합 취소선
   function strikeText(text) {
     const s = String(text);
@@ -2032,7 +2196,7 @@ ${IKONG_FOOTER}`.trim();
 
     const pyeongLine = pyeongType ? `${pyeongType} (${extension})` : `(${extension})`;
     const areasLine = formatAreasPreset(areasValue);
-    const isSingleAreaQuote = areasValue === "거실";
+    const isSingleAreaQuote = isLivingOnlyArea(areasValue);
 
     const headerLines = [
       "☀️까사플로아 층간소음매트",
@@ -2041,7 +2205,7 @@ ${IKONG_FOOTER}`.trim();
       siteName ? `✔️${siteName}` : "",
       `✔️평형타입: ${pyeongLine}`,
       `✔️시공공간: ${areasLine}`,
-      isSingleAreaQuote ? "" : "✔️본사 전문가시공 무료제공",
+      `✔️${casaInstallMethodText(areasValue)}`,
     ].filter(Boolean);
 
     const header = headerLines.join("\n");
@@ -2070,17 +2234,15 @@ ${p.tail}`
       );
     }
 
-    if (data.optCasaRefurb) {
-      const refurbBlocks = CASA_REFURB.map((product) => {
-        const total = qty1200 * product.unitPrice;
-        return `💕${product.name}
+    const refurbBlocks = CASA_REFURB.map((product) => {
+      const total = qty1200 * product.unitPrice;
+      return `💕${product.name}
 ${product.size.replace(/ × /g, "x")}
 예상장수: ${formatQty(qty1200)}
 예상금액: ${formatWon(total)}
 (행사가 장당 ${formatWon(product.unitPrice)})`;
-      });
-      blocks.push(`[리퍼브 라인업]\n\n${refurbBlocks.join("\n\n")}`);
-    }
+    });
+    blocks.push(`[리퍼브 라인업]\n\n${refurbBlocks.join("\n\n")}`);
 
     // ✅ 까사플로아에도 방 옵션(여러개) 출력
     if (data.optRooms && Array.isArray(data.rooms) && data.rooms.length > 0) {
@@ -2309,53 +2471,69 @@ ${noticeBody}`.trim();
     return `${y}.${m}.${day}`;
   }
 
-  function casaProductCard({ number, name, size, unitPrice, qty }, variant = "") {
-    const total = qty * unitPrice;
-    return `
-      <div class="casa-product-card ${variant}">
-        <div class="casa-product-badge">${number}</div>
-        <div class="casa-product-name">${esc(name)}</div>
-        <div class="casa-product-size">${esc(size)}</div>
-        <div class="casa-product-lines">
-          <div class="casa-product-row"><span>예상장수</span><strong>${formatQty(qty)}</strong></div>
-          <div class="casa-product-row"><span>행사가(장당)</span><strong>${formatWon(unitPrice)}</strong></div>
-          <div class="casa-product-row"><span>예상금액</span><strong>${formatWon(total)}</strong></div>
-        </div>
-        <div class="casa-product-total">
-          <span>총 예상금액</span>
-          <strong>${formatWon(total)}</strong>
-        </div>
-      </div>`;
-  }
-
   function renderCasaProducts(data) {
     const products = [
-      { number: "01", name: "클래식 600", size: "60cm × 60cm × 2.2cm", unitPrice: 23000, qty: data.qty600 },
-      { number: "02", name: "클래식 스킨퓨어 600", size: "60cm × 60cm × 2.2cm", unitPrice: 26000, qty: data.qty600 },
-      { number: "03", name: "프리미엄 1200", size: "120cm × 120cm × 2.4cm", unitPrice: 109000, qty: data.qty1200 },
-      { number: "04", name: "스킨퓨어 1200", size: "120cm × 120cm × 2.4cm", unitPrice: 119000, qty: data.qty1200 },
+      { number: "01", name: "클래식 600", size: "60cm × 60cm × 2.2cm", unitPrice: 23000, qty: data.qty600, basis: "일반 라인" },
+      { number: "02", name: "클래식 스킨퓨어 600", size: "60cm × 60cm × 2.2cm", unitPrice: 26000, qty: data.qty600, basis: "스킨퓨어" },
+      { number: "03", name: "프리미엄 1200", size: "120cm × 120cm × 2.4cm", unitPrice: 109000, qty: data.qty1200, basis: "대형 프리미엄" },
+      { number: "04", name: "스킨퓨어 1200", size: "120cm × 120cm × 2.4cm", unitPrice: 119000, qty: data.qty1200, basis: "대형 스킨퓨어" },
     ];
 
-    if (data.optCasaRefurb) {
-      products.push(
-        {
-          number: "05",
-          name: CASA_REFURB[0].name,
-          size: CASA_REFURB[0].size,
-          unitPrice: CASA_REFURB[0].unitPrice,
-          qty: data.qty1200
-        },
-        {
-          number: "06",
-          name: CASA_REFURB[1].name,
-          size: CASA_REFURB[1].size,
-          unitPrice: CASA_REFURB[1].unitPrice,
-          qty: data.qty1200
-        }
-      );
-    }
+    products.push(
+      {
+        number: "05",
+        name: CASA_REFURB[0].name,
+        size: CASA_REFURB[0].size,
+        unitPrice: CASA_REFURB[0].unitPrice,
+        qty: data.qty1200,
+        basis: "리퍼브 특가",
+        refurb: true
+      },
+      {
+        number: "06",
+        name: CASA_REFURB[1].name,
+        size: CASA_REFURB[1].size,
+        unitPrice: CASA_REFURB[1].unitPrice,
+        qty: data.qty1200,
+        basis: "리퍼브 특가",
+        refurb: true
+      }
+    );
 
-    return `<div class="casa-product-grid${data.optCasaRefurb ? " has-refurb" : ""}">${products.map(casaProductCard).join("")}</div>`;
+    const headerCells = products.map((product) => `
+      <th>
+        <div class="casa-product-head">
+          <span class="casa-product-chip">${esc(product.number)}</span>
+          <strong>${esc(product.name)}</strong>
+          <em>${esc(product.size)}</em>
+          ${product.refurb ? `<span class="casa-refurb-chip">리퍼브</span>` : ""}
+        </div>
+      </th>`).join("");
+
+    const row = (label, values, className = "") => `
+      <tr class="${className}">
+        <td class="casa-row-head">${label}</td>
+        ${values.map((value) => `<td>${value}</td>`).join("")}
+      </tr>`;
+
+    return `
+      <div class="casa-product-table-wrap">
+        <table class="casa-product-table is-wide">
+          <thead>
+            <tr>
+              <th class="casa-row-head"></th>
+              ${headerCells}
+            </tr>
+          </thead>
+          <tbody>
+            ${row("장당금액", products.map((product) => formatWon(product.unitPrice)))}
+            ${row("예상장수", products.map((product) => formatQty(product.qty)))}
+            ${row("상품금액", products.map((product) => formatWon(product.qty * product.unitPrice)))}
+            ${row("적용 기준", products.map((product) => `<span class="casa-muted-cell">${esc(product.basis)}</span>`))}
+            ${row("합계", products.map((product) => formatWon(product.qty * product.unitPrice)), "casa-total-row")}
+          </tbody>
+        </table>
+      </div>`;
   }
 
   function renderCasaRooms(data) {
@@ -2411,6 +2589,7 @@ ${noticeBody}`.trim();
   function renderCasaEstimate(data) {
     const areasValue = getAreasValue(data.areasPreset, data.areasCustom);
     const pyeongLine = data.pyeongType ? `${data.pyeongType} (${data.extension})` : (data.extension || "-");
+    const installMethod = casaInstallMethodText(areasValue);
     const planSection = data.casaPlanImageSrc ? `
       <section class="casa-plan-section">
         <div class="casa-plan-copy">
@@ -2445,11 +2624,11 @@ ${noticeBody}`.trim();
           <section class="casa-info-card">
             <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("user")}</div><div><div class="casa-info-label">고객명</div><div class="casa-info-value">${esc(customerDisplayName(data.customerName))}</div></div></div>
             <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("phone")}</div><div><div class="casa-info-label">연락처</div><div class="casa-info-value">${esc(data.phone || "카카오톡 채널 문의")}</div></div></div>
-            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("home")}</div><div><div class="casa-info-label">시공공간 / 시공범위</div><div class="casa-info-value">${esc(formatAreasPreset(areasValue))}</div></div></div>
-            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("pin")}</div><div><div class="casa-info-label">주소</div><div class="casa-info-value">${esc(data.siteName || "-")}</div></div></div>
             <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("calendar")}</div><div><div class="casa-info-label">견적일</div><div class="casa-info-value">${todayDotText()}</div></div></div>
             <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("ruler")}</div><div><div class="casa-info-label">평형타입 / 면적</div><div class="casa-info-value">${esc(pyeongLine)}</div></div></div>
-            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("tools")}</div><div><div class="casa-info-label">시공방식</div><div class="casa-info-value">본사 전문가시공 무료 제공</div></div></div>
+            <div class="casa-info-item casa-info-wide"><div class="casa-info-icon">${casaIcon("pin")}</div><div><div class="casa-info-label">주소</div><div class="casa-info-value">${esc(data.siteName || "-")}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("home")}</div><div><div class="casa-info-label">시공공간</div><div class="casa-info-value">${esc(formatAreasPreset(areasValue))}</div></div></div>
+            <div class="casa-info-item"><div class="casa-info-icon">${casaIcon("tools")}</div><div><div class="casa-info-label">시공방식</div><div class="casa-info-value">${installMethod}</div></div></div>
           </section>
 
           ${planSection}
@@ -2863,7 +3042,7 @@ ${noticeBody}`.trim();
     document.body.classList.toggle("template-ikong", isIkong);
     document.body.classList.toggle("template-casa", !isIkong);
     if ($("reviewWrap")) $("reviewWrap").style.display = isCasa ? "flex" : "none";
-    if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = isCasa ? "flex" : "none";
+    if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = "none";
     if ($("casaPlanWrap")) $("casaPlanWrap").style.display = isCasa ? "flex" : "none";
 
     updateIkongModeUI();
@@ -3045,7 +3224,7 @@ ${noticeBody}`.trim();
   update600Hint();
   updateIkongModeUI();
   if ($("reviewWrap")) $("reviewWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
-  if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
+  if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = "none";
   if ($("casaPlanWrap")) $("casaPlanWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
   setRoomsUIEnabled(false);
   renderRoomAddButton();
