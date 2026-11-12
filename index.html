@@ -153,6 +153,9 @@
       margin-top: 10px !important;
     }
 
+    #btnInclude1300 { margin-top: 10px; }
+    #btnInclude1300[aria-pressed="true"] { background:var(--ink); color:white; }
+    .template-casa #btnInclude1300, .template-casa #qty1300Field { display:none; }
     .qty-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     #qty1200 + .hint { display:none; }
     @media (max-width: 720px){ .qty-grid { grid-template-columns: 1fr; } }
@@ -401,9 +404,25 @@
       background:#35aaa4;
       border-radius: 999px;
     }
-    .q-line-section {
+    .q-lineups {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
       padding-top: 2px;
     }
+    .q-lineups-wide { grid-template-columns:repeat(10,minmax(0,1fr)); column-gap:0; }
+    .q-lineups-wide > * { grid-column:span 5; }
+    .q-lineups-wide > :nth-child(odd) { margin-right:12px; }
+    .q-lineups-wide > :nth-child(even) { margin-left:12px; }
+    .q-lineups-wide > :first-child { grid-column:span 4; }
+    .q-lineups-wide > :nth-child(2) { grid-column:span 6; }
+    .q-lineups-wide .q-product-grid { gap:10px; }
+    .q-lineups-wide .q-product-body { padding:15px 9px 10px; }
+    .q-lineups-wide .q-price-line { gap:4px; white-space:nowrap; }
+    .q-lineups-wide .q-price-line .event { font-size:19px; }
+    .q-lineups-wide .q-card-total { padding:10px 9px; gap:3px; flex-wrap:wrap; }
+    .q-lineups-wide .q-card-total strong { font-size:18px; margin-left:auto; }
+    .q-line-section:only-child { grid-column:1 / -1; }
     .q-line-badge {
       display:inline-flex;
       align-items:center;
@@ -424,7 +443,8 @@
     }
     .q-product-grid {
       display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
       gap: 16px;
     }
     .q-product-card {
@@ -498,50 +518,37 @@
       letter-spacing: -.02em;
     }
     .q-card-total.pink { background: linear-gradient(90deg, #ff9ab5, #f47b9e); }
-    .q-refurb-layout {
-      display:grid;
-      grid-template-columns: 1fr 140px;
-      gap: 20px;
-      align-items:stretch;
+    .q-refurb-note {
+      display:flex;
+      flex-direction:column;
+      margin:0;
+    }
+    .q-refurb-note h3 {
+      margin: 0 0 16px;
+      padding: 5px 0;
+      color:#853d52;
+      font-size: 22px;
+      line-height:1;
     }
     .q-refurb-desc {
-      border: 1.5px solid #ff8fac;
-      border-radius: 8px;
-      padding: 14px 17px;
-      background:#fff9fb;
-      color:#111;
-      line-height: 1.52;
-      font-size: 13px;
-      font-weight: 500;
-    }
-    .q-refurb-desc b {
-      display:block;
-      color:#ff789b;
-      margin-bottom: 8px;
-      font-size: 17px;
-    }
-    .q-mascot {
-      display:flex;
+      flex:1;
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) 96px;
+      align-content:center;
       align-items:center;
-      justify-content:center;
-      min-height: 100px;
-      position: relative;
+      gap: 18px;
+      padding: 20px;
+      border: 1px solid #edc5d1;
+      border-radius: 8px;
+      background:#fff9fb;
+      color:#392c30;
+      font-size:16px;
+      line-height:1.65;
+      word-break:keep-all;
     }
-    .q-mascot img {
-      width: 100px;
-      max-width: 100%;
-      opacity: .95;
-    }
-    .q-mascot::before,
-    .q-mascot::after {
-      content:"★";
-      position:absolute;
-      color:#ff8fac;
-      font-size:28px;
-      font-weight:900;
-    }
-    .q-mascot::before { top: 22px; left: 28px; }
-    .q-mascot::after { top: 42px; right: 12px; color:#63c6c1; font-size:22px; }
+    .q-refurb-desc p { margin:0; }
+    .q-refurb-desc p + p { margin-top:10px; }
+    .q-refurb-desc img { display:block; width:100%; }
     .q-room-table-wrap {
       border: 1px solid rgba(53, 170, 164, .30);
       border-radius: 15px;
@@ -1556,6 +1563,8 @@
         <span class="mini">현재 선택: <b id="tplLabel">아이콩콩</b></span>
       </div>
 
+      <button id="btnInclude1300" class="tab" type="button" aria-pressed="false" aria-controls="qty1300Field">1300 사이즈 포함</button>
+
       <div class="mini muted" style="margin-top:8px;">
         기존 아이콩콩 견적 템플릿의 상품/가격/안내 문구를 사용해 카톡용 문구와 이미지 견적서를 함께 만듭니다.
       </div>
@@ -1614,6 +1623,10 @@
     <div class="card">
       <h2>장수 입력</h2>
       <div class="qty-grid">
+        <div id="qty1300Field" hidden>
+          <label for="qty1300">1300 장수</label>
+          <input id="qty1300" type="number" min="0" step="0.5" placeholder="0" />
+        </div>
         <div>
           <label>1200 장수</label>
           <input id="qty1200" type="number" min="0" step="0.5" placeholder="0" />
@@ -1736,6 +1749,7 @@
       title: "스킨퓨어 라인업",
       tone: "pink",
       products: [
+        { label: "👉스킨퓨어1300", quantity: "qty1300", size: "130cm × 130cm × 2.5cm", unitPrice: 132000 },
         { label: "👉스킨퓨어1200", quantity: "qty1200", size: "120cmx120cmx2.4cm", regularPrice: 134000, eventPrice: 118000 },
         { label: "👉스킨퓨어600", quantity: "qty600", size: "60cmx60cmx2.2cm", regularPrice: 28000, eventPrice: 26000 },
       ],
@@ -1966,6 +1980,7 @@ ${CASA_FREE_SERVICE_LINE}
     const areasPreset = $("areasPreset").value;
     const areasCustom = $("areasCustom").value.trim();
 
+    const qty1300 = currentTemplate === "ikong" && !$("qty1300Field").hidden ? safeNum($("qty1300").value) : 0;
     const qty1200 = safeNum($("qty1200").value);
     const qty600 = safeNum($("qty600").value);
 
@@ -1989,7 +2004,7 @@ ${CASA_FREE_SERVICE_LINE}
     return {
       customerName, phone, siteName,
       pyeongType, extension, areasPreset, areasCustom,
-      qty1200, qty600,
+      qty1300, qty1200, qty600,
       optRooms, rooms,
       optReview,
       optCasaRefurb,
@@ -2260,7 +2275,7 @@ ${noticeBody}`.trim();
 
   function renderLineupsVisual(data) {
     const blocks = ikongQuoteLineups(data).map(lineup => `
-      <section class="q-section q-line-section">
+      <section class="q-line-section">
         <div class="q-line-badge ${lineup.tone}">★ ${lineup.title}</div>
         <div class="q-product-grid">
           ${lineup.products.map(product => quoteProductCard(product, data[product.quantity], lineup.tone)).join("")}
@@ -2269,25 +2284,27 @@ ${noticeBody}`.trim();
 
     if (data.qty1200 > 0) {
       blocks.push(`
-        <section class="q-section">
-          <div class="q-refurb-layout">
-            <div class="q-refurb-desc">
-              <b>리퍼브란?</b>
-              생산 과정에 찍힘, 눌림, 색상 차이, 스크래치 등이 일부 발생한 새제품입니다. 기능 효율은 A급과 동일하지만 미관상 단점이 있어 무상 A/S가 적용되지 않습니다.
+        <aside class="q-refurb-note">
+          <h3>리퍼브 안내</h3>
+          <div class="q-refurb-desc">
+            <div>
+              <p>생산 과정에 찍힘, 눌림, 색상 차이, 스크래치 등이 일부 발생한 새제품입니다.</p>
+              <p>기능 효율은 A급과 동일하지만 미관상 단점이 있어 무상 A/S가 적용되지 않습니다.</p>
             </div>
-            <div class="q-mascot"><img src="./assets/ikongkong-icon.png" alt="" /></div>
+            <img src="./assets/ikongkong-icon.png" alt="" />
           </div>
-        </section>`);
+        </aside>`);
     }
 
     if (blocks.length === 0) {
-      blocks.push(`
+      return `
         <section class="q-section">
-          <div class="q-empty">1200 또는 600 장수를 입력하면 견적 카드가 표시됩니다.</div>
-        </section>`);
+          <div class="q-empty">제품 장수를 입력하면 견적 카드가 표시됩니다.</div>
+        </section>`;
     }
 
-    return blocks.join("");
+    const wide = data.qty1300 > 0 && data.qty1200 > 0 && data.qty600 > 0;
+    return `<div class="q-section q-lineups${wide ? " q-lineups-wide" : ""}">${blocks.join("")}</div>`;
   }
 
   function casaIcon(type) {
@@ -2917,6 +2934,11 @@ ${noticeBody}`.trim();
     }
   }
 
+  function setInclude1300(enabled) {
+    $("btnInclude1300").setAttribute("aria-pressed", String(enabled));
+    $("qty1300Field").hidden = !enabled;
+  }
+
   function clearAll() {
     $("customerName").value = "";
     $("phone").value = "";
@@ -2927,6 +2949,8 @@ ${noticeBody}`.trim();
     $("areasPreset").value = "";
     $("areasCustom").value = "";
 
+    setInclude1300(false);
+    $("qty1300").value = "";
     $("qty1200").value = "";
     $("qty600").value = "";
 
@@ -2973,6 +2997,11 @@ ${noticeBody}`.trim();
   $("btnTplIkong").addEventListener("click", () => setTemplate("ikong"));
   $("btnTplCasa").addEventListener("click", () => setTemplate("casa"));
 
+  $("btnInclude1300").addEventListener("click", () => {
+    setInclude1300($("qty1300Field").hidden);
+    generate();
+  });
+  $("qty1300").addEventListener("input", generate);
   $("qty1200").addEventListener("input", () => { update600Hint(); generate(); });
   $("qty600").addEventListener("input", generate);
   ["customerName", "phone", "siteName", "pyeongType"].forEach((id) => {
