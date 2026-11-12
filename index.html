@@ -142,28 +142,6 @@
       display:none;
     }
 
-    /* ✅ 아이콩콩 전용 모드 버튼 */
-    .ikong-mode-wrap {
-      margin-top: 10px;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .mode-btn{
-      border:0;
-      padding:10px 12px;
-      border-radius:6px;
-      font-size:14px; cursor:pointer;
-      background:#e7eef6; color: var(--ink);
-    }
-    .mode-btn.active{ background: var(--ink); color:#fff; }
-    .mode-hint{
-      grid-column: 1 / -1;
-      font-size:12px;
-      color:#7d8fa3;
-      line-height: 1.5;
-      margin-left:0;
-    }
-
     .hint { font-size: 12px; color:#7d8fa3; line-height: 1.5; margin-top: 6px; }
     .mini { font-size: 12px; color:#64748b; }
     .ok { color: #0a7; font-weight: 600; }
@@ -176,6 +154,7 @@
     }
 
     .qty-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .template-casa #qty1300Field { display:none; }
     .qty-grid > div:first-child .hint { display:none; }
     @media (max-width: 720px){ .qty-grid { grid-template-columns: 1fr; } }
 
@@ -1578,13 +1557,6 @@
         <span class="mini">현재 선택: <b id="tplLabel">아이콩콩</b></span>
       </div>
 
-      <!-- ✅ 아이콩콩 눌렀을 때만 보이는 모드 버튼 -->
-      <div id="ikongModeWrap" class="row ikong-mode-wrap">
-        <button id="btnModeNormal" class="mode-btn active" type="button">일반</button>
-        <button id="btnModePick" class="mode-btn" type="button">띠내언니 PICK</button>
-        <span class="mode-hint">※ PICK: 1200만 출력 + 스킨퓨어 상단 + 10만원 추가할인 (+방 옵션은 유지)</span>
-      </div>
-
       <div class="mini muted" style="margin-top:8px;">
         기존 아이콩콩 견적 템플릿의 상품/가격/안내 문구를 사용해 카톡용 문구와 이미지 견적서를 함께 만듭니다.
       </div>
@@ -1653,6 +1625,10 @@
           <label>600 장수</label>
           <input id="qty600" type="number" min="0" step="1" placeholder="0" />
           <div id="hint600" class="hint" style="color:#999;">예상 600장수(1200×4): -</div>
+        </div>
+        <div id="qty1300Field">
+          <label for="qty1300">스킨퓨어1300 장수</label>
+          <input id="qty1300" type="number" min="0" step="0.5" placeholder="0" />
         </div>
       </div>
 
@@ -1762,7 +1738,8 @@
     { label: "👉스킨퓨어1200", size: "120cmx120cmx2.4cm", regularPrice: 134000, eventPrice: 118000 },
   ];
 
-  // (일반모드에서만 사용)
+  const IKONG_1300 = { label: "👉스킨퓨어1300", size: "130cm × 130cm × 2.5cm", unitPrice: 132000 };
+
   const IKONG_REFURB_DESC =
 `리퍼브란? 생산과정에
 찍힘,눌림,색상차이,스크래치등이
@@ -1773,7 +1750,6 @@ A급과 동일하지만 미관상 단점이
 하자가 미리 존재하기에 무상
 A/S가 적용되지 않는 상품입니다`;
 
-  // (일반모드에서만 사용)
   const IKONG_1200_REFURB = [
     { label: "👉프리미엄1200(리퍼브)", size: "120cmx120cmx2.4cm", regularPrice: 104000, eventPrice:  98000 },
     { label: "👉스킨퓨어1200(리퍼브)", size: "120cmx120cmx2.4cm", regularPrice: 114000, eventPrice: 107000 },
@@ -1984,6 +1960,7 @@ ${CASA_FREE_SERVICE_LINE}
     const areasPreset = $("areasPreset").value;
     const areasCustom = $("areasCustom").value.trim();
 
+    const qty1300 = safeNum($("qty1300").value);
     const qty1200 = safeNum($("qty1200").value);
     const qty600 = safeNum($("qty600").value);
 
@@ -2007,7 +1984,7 @@ ${CASA_FREE_SERVICE_LINE}
     return {
       customerName, phone, siteName,
       pyeongType, extension, areasPreset, areasCustom,
-      qty1200, qty600,
+      qty1300, qty1200, qty600,
       optRooms, rooms,
       optReview,
       optCasaRefurb,
@@ -2019,13 +1996,11 @@ ${CASA_FREE_SERVICE_LINE}
   // =========================
   // 4) 템플릿 빌더
   // =========================
-  let ikongMode = "normal"; // "normal" | "pick"
   let casaPlanImageSrc = "";
   let casaPlanImageLoadToken = 0;
-  const IKONG_EXTRA_DISCOUNT = 100000;
 
   function buildIkongkong(data) {
-    const { customerName,phone,siteName, pyeongType, extension, areasPreset, areasCustom, qty1200, qty600 } = data;
+    const { customerName,phone,siteName, pyeongType, extension, areasPreset, areasCustom, qty1300, qty1200, qty600 } = data;
     const areasValue = getAreasValue(areasPreset, areasCustom);
 
     const header =
@@ -2038,75 +2013,6 @@ ${CASA_FREE_SERVICE_LINE}
 ✿시공범위: ${formatAreasPreset(areasValue)}
 ✿박람회행사가 프로모션적용`.trim();
 
-    // =========================
-    // ✅ 띠내언니 PICK 모드
-    // =========================
-    if (ikongMode === "pick") {
-      const blocks = [];
-
-      if (qty1200 > 0) {
-        const skin = IKONG_1200_PREMIUM.find(x => x.label.includes("스킨퓨어"));
-        const prem = IKONG_1200_PREMIUM.find(x => x.label.includes("프리미엄"));
-        const ordered = [skin, prem].filter(Boolean);
-
-        for (const p of ordered) {
-          const total = qty1200 * p.eventPrice;
-          const finalTotal = Math.max(0, total - IKONG_EXTRA_DISCOUNT);
-
-          const title = p.label.includes("스킨퓨어")
-            ? `${p.label}띠내언니 PICK❤️]`
-            : `${p.label}`;
-
-          blocks.push(
-`${title}
-${p.size}
-❃장당: ${strikeText(formatWon(p.regularPrice))}
-❃이벤트가: ${formatWon(p.eventPrice)}
-❃예상수량: ${formatQty(qty1200)}
-❃총금액: ${formatWon(total)}
-✅추가 할인 10만원 적용
-✅총금액: ${formatWon(finalTotal)}`
-          );
-        }
-      } else {
-        blocks.push(`(1200 장수를 입력하면 출력됩니다.)`);
-      }
-
-      // ✅ PICK 모드에서도 방(여러 개) 출력 유지
-      if (data.optRooms && Array.isArray(data.rooms) && data.rooms.length > 0) {
-        for (const room of data.rooms) {
-          const roomLines = [];
-          roomLines.push(`-방(${room.name})`);
-
-          for (const p of IKONG_600) {
-            const total = room.qty * p.eventPrice;
-            roomLines.push(
-`${p.label}
-${p.size}
-❃장당: ${strikeText(formatWon(p.regularPrice))}
-❃이벤트가: ${formatWon(p.eventPrice)}
-❃예상수량: ${formatQty(room.qty)}
-❃총금액: ${formatWon(total)}`
-            );
-          }
-
-          blocks.push(roomLines.join("\n\n"));
-        }
-      }
-
-      // ✅ 리뷰이벤트는 "까사플로아만" 출력하므로 아이콩콩에서는 제거
-      return `${header}
-
-${IKONG_INTRO}
-
-${blocks.join("\n\n")}
-
-${IKONG_FOOTER}`.trim();
-    }
-
-    // =========================
-    // (기존) 아이콩콩 일반 양식
-    // =========================
     const lines = [];
     lines.push(`[프리미엄 라인업]`);
 
@@ -2138,6 +2044,16 @@ ${p.size}
       }
     }
 
+    if (qty1300 > 0) {
+      lines.push(
+`${IKONG_1300.label}
+${IKONG_1300.size}
+❃장당: ${formatWon(IKONG_1300.unitPrice)}
+❃예상수량: ${formatQty(qty1300)}
+❃총금액: ${formatWon(qty1300 * IKONG_1300.unitPrice)}`
+      );
+    }
+
     if (qty1200 > 0) {
       lines.push(`[리퍼브 라인업]`);
       lines.push(IKONG_REFURB_DESC);
@@ -2155,7 +2071,6 @@ ${p.size}
       }
     }
 
-    // ✅ 일반 모드에서도 방(여러 개) 옵션 출력
     if (data.optRooms && Array.isArray(data.rooms) && data.rooms.length > 0) {
       for (const room of data.rooms) {
         lines.push(``);
@@ -2331,35 +2246,27 @@ ${noticeBody}`.trim();
     return `<svg ${common}>${paths[type] || paths.diamond}</svg>`;
   }
 
-  function quoteProductCard(product, qty, tone = "teal", discount = 0) {
-    const total = qty * product.eventPrice;
-    const finalTotal = Math.max(0, total - discount);
-    const hasDiscount = discount > 0;
+  function quoteProductCard(product, qty, tone = "teal") {
     const totalClass = tone === "pink" ? " pink" : "";
     const cardClass = tone === "pink" ? " q-product-card pink-border" : "q-product-card";
-    const discountRow = hasDiscount
-      ? `<div class="q-price-line"><span>추가 할인</span><strong class="event">-${formatWon(discount)}</strong></div>`
-      : "";
+    const unitPrice = product.unitPrice ?? product.eventPrice;
+    const regularPriceRow = product.regularPrice == null ? "" :
+      `<div class="q-price-line"><span>장당</span><strong class="old">${formatWon(product.regularPrice)}</strong></div>`;
     return `
       <div class="${cardClass}">
         <div class="q-product-body">
           <h4 class="q-product-name">${esc(cleanLabel(product.label))}</h4>
           <div class="q-product-size">${esc(product.size.replace(/x/g, " × "))}</div>
           <div class="q-dash"></div>
-          <div class="q-price-line"><span>장당</span><strong class="old">${formatWon(product.regularPrice)}</strong></div>
-          <div class="q-price-line"><span>이벤트가</span><strong class="event">${formatWon(product.eventPrice)}</strong></div>
+          ${regularPriceRow}
+          <div class="q-price-line"><span>${product.regularPrice == null ? "장당" : "이벤트가"}</span><strong class="event">${formatWon(unitPrice)}</strong></div>
           <div class="q-price-line"><span>예상수량</span><strong>${formatQty(qty)}</strong></div>
-          ${discountRow}
         </div>
         <div class="q-card-total${totalClass}">
           <span>총금액</span>
-          <strong>${formatWon(finalTotal)}</strong>
+          <strong>${formatWon(qty * unitPrice)}</strong>
         </div>
       </div>`;
-  }
-
-  function renderCardGrid(products, qty, tone = "teal", discount = 0) {
-    return `<div class="q-product-grid">${products.map(p => quoteProductCard(p, qty, tone, discount)).join("")}</div>`;
   }
 
   function renderRoomsVisual(data) {
@@ -2396,50 +2303,39 @@ ${noticeBody}`.trim();
   function renderLineupsVisual(data) {
     const blocks = [];
 
-    if (ikongMode === "pick") {
-      if (data.qty1200 > 0) {
-        const skin = IKONG_1200_PREMIUM.find(x => x.label.includes("스킨퓨어"));
-        const prem = IKONG_1200_PREMIUM.find(x => x.label.includes("프리미엄"));
-        const ordered = [skin, prem].filter(Boolean);
-        blocks.push(`
-          <section class="q-section q-line-section">
-            <div class="q-line-badge pink">★ 띠내언니 PICK</div>
-            ${renderCardGrid(ordered, data.qty1200, "pink", IKONG_EXTRA_DISCOUNT)}
-          </section>`);
-      }
-    } else {
-      const premiumCards = [];
-      if (data.qty600 > 0) premiumCards.push(...IKONG_600.map(p => quoteProductCard(p, data.qty600, "teal")));
-      if (data.qty1200 > 0) premiumCards.push(...IKONG_1200_PREMIUM.map(p => quoteProductCard(p, data.qty1200, "teal")));
+    const premiumCards = [];
+    if (data.qty600 > 0) premiumCards.push(...IKONG_600.map(p => quoteProductCard(p, data.qty600, "teal")));
+    if (data.qty1200 > 0) premiumCards.push(...IKONG_1200_PREMIUM.map(p => quoteProductCard(p, data.qty1200, "teal")));
 
-      if (premiumCards.length > 0) {
-        blocks.push(`
-          <section class="q-section q-line-section">
-            <div class="q-line-badge">★ 프리미엄 라인업</div>
-            <div class="q-product-grid">${premiumCards.join("")}</div>
-          </section>`);
-      }
+    if (data.qty1300 > 0) premiumCards.push(quoteProductCard(IKONG_1300, data.qty1300));
 
-      if (data.qty1200 > 0) {
-        blocks.push(`
-          <section class="q-section q-line-section">
-            <div class="q-line-badge pink">★ 리퍼브 라인업</div>
-            <div class="q-refurb-layout">
-              <div class="q-refurb-desc">
-                <b>리퍼브란?</b>
-                생산 과정에 찍힘, 눌림, 색상 차이, 스크래치 등이 일부 발생한 새제품입니다. 기능 효율은 A급과 동일하지만 미관상 단점이 있어 무상 A/S가 적용되지 않습니다.
-              </div>
-              ${IKONG_1200_REFURB.map(p => quoteProductCard(p, data.qty1200, "pink")).join("")}
-              <div class="q-mascot"><img src="./assets/ikongkong-icon.png" alt="" /></div>
+    if (premiumCards.length > 0) {
+      blocks.push(`
+        <section class="q-section q-line-section">
+          <div class="q-line-badge">★ 프리미엄 라인업</div>
+          <div class="q-product-grid">${premiumCards.join("")}</div>
+        </section>`);
+    }
+
+    if (data.qty1200 > 0) {
+      blocks.push(`
+        <section class="q-section q-line-section">
+          <div class="q-line-badge pink">★ 리퍼브 라인업</div>
+          <div class="q-refurb-layout">
+            <div class="q-refurb-desc">
+              <b>리퍼브란?</b>
+              생산 과정에 찍힘, 눌림, 색상 차이, 스크래치 등이 일부 발생한 새제품입니다. 기능 효율은 A급과 동일하지만 미관상 단점이 있어 무상 A/S가 적용되지 않습니다.
             </div>
-          </section>`);
-      }
+            ${IKONG_1200_REFURB.map(p => quoteProductCard(p, data.qty1200, "pink")).join("")}
+            <div class="q-mascot"><img src="./assets/ikongkong-icon.png" alt="" /></div>
+          </div>
+        </section>`);
     }
 
     if (blocks.length === 0) {
       blocks.push(`
         <section class="q-section">
-          <div class="q-empty">1200 장수 또는 600 장수를 입력하면 견적 카드가 표시됩니다.</div>
+          <div class="q-empty">600, 1200, 1300 중 장수를 입력하면 견적 카드가 표시됩니다.</div>
         </section>`);
     }
 
@@ -2678,7 +2574,6 @@ ${noticeBody}`.trim();
 
     const areasValue = getAreasValue(data.areasPreset, data.areasCustom);
     const pyeongLine = data.pyeongType ? `${data.pyeongType} (${data.extension})` : (data.extension || "-");
-    const promotion = ikongMode === "pick" ? "띠내언니 PICK 혜택" : "박람회 행사가 적용";
 
     sheet.innerHTML = `
       <header class="q-hero">
@@ -2693,7 +2588,7 @@ ${noticeBody}`.trim();
             <div class="q-info-item">${qIcon("home")}<div class="q-label">시공범위</div><div class="q-value">${esc(formatAreasPreset(areasValue))}</div></div>
             <div class="q-info-item">${qIcon("phone")}<div class="q-label">연락처</div><div class="q-value">${esc(data.phone || "카카오톡 채널 문의")}</div></div>
             <div class="q-info-item">${qIcon("ruler", true)}<div class="q-label">평형</div><div class="q-value">${esc(pyeongLine)}</div></div>
-            <div class="q-info-item">${qIcon("tools", true)}<div class="q-label">프로모션</div><div class="q-value">${esc(promotion)}</div></div>
+            <div class="q-info-item">${qIcon("tools", true)}<div class="q-label">프로모션</div><div class="q-value">박람회 행사가 적용</div></div>
           </div>
         </div>
 
@@ -3034,15 +2929,6 @@ ${noticeBody}`.trim();
   // =========================
   let currentTemplate = "ikong"; // "ikong" | "casa"
 
-  function updateIkongModeUI() {
-    const wrap = $("ikongModeWrap");
-    const isIkong = currentTemplate === "ikong";
-    if (wrap) wrap.style.display = isIkong ? "grid" : "none";
-
-    $("btnModeNormal")?.classList.toggle("active", ikongMode === "normal");
-    $("btnModePick")?.classList.toggle("active", ikongMode === "pick");
-  }
-
   function setTemplate(tpl) {
     currentTemplate = tpl;
     const isIkong = tpl === "ikong";
@@ -3056,7 +2942,6 @@ ${noticeBody}`.trim();
     if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = "none";
     if ($("casaPlanWrap")) $("casaPlanWrap").style.display = isCasa ? "flex" : "none";
 
-    updateIkongModeUI();
     generate();
   }
 
@@ -3094,6 +2979,7 @@ ${noticeBody}`.trim();
     $("areasPreset").value = "";
     $("areasCustom").value = "";
 
+    $("qty1300").value = "";
     $("qty1200").value = "";
     $("qty600").value = "";
 
@@ -3140,19 +3026,8 @@ ${noticeBody}`.trim();
   $("btnTplIkong").addEventListener("click", () => setTemplate("ikong"));
   $("btnTplCasa").addEventListener("click", () => setTemplate("casa"));
 
-  // ✅ 아이콩콩 모드 버튼(색상 토글)
-  $("btnModeNormal").addEventListener("click", () => {
-    ikongMode = "normal";
-    updateIkongModeUI();
-    generate();
-  });
-  $("btnModePick").addEventListener("click", () => {
-    ikongMode = "pick";
-    updateIkongModeUI();
-    generate();
-  });
-
   $("qty1200").addEventListener("input", () => { update600Hint(); generate(); });
+  $("qty1300").addEventListener("input", generate);
   $("qty600").addEventListener("input", generate);
   ["customerName", "phone", "siteName", "pyeongType"].forEach((id) => {
     $(id)?.addEventListener("input", generate);
@@ -3233,7 +3108,6 @@ ${noticeBody}`.trim();
 
   // 최초 로드
   update600Hint();
-  updateIkongModeUI();
   if ($("reviewWrap")) $("reviewWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
   if ($("casaRefurbWrap")) $("casaRefurbWrap").style.display = "none";
   if ($("casaPlanWrap")) $("casaPlanWrap").style.display = currentTemplate === "casa" ? "flex" : "none";
