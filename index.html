@@ -154,7 +154,6 @@
     }
 
     .qty-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .template-casa #qty1300Field { display:none; }
     #qty1200 + .hint { display:none; }
     @media (max-width: 720px){ .qty-grid { grid-template-columns: 1fr; } }
 
@@ -1615,10 +1614,6 @@
     <div class="card">
       <h2>장수 입력</h2>
       <div class="qty-grid">
-        <div id="qty1300Field">
-          <label for="qty1300">1300 장수</label>
-          <input id="qty1300" type="number" min="0" step="0.5" placeholder="0" />
-        </div>
         <div>
           <label>1200 장수</label>
           <input id="qty1200" type="number" min="0" step="0.5" placeholder="0" />
@@ -1741,7 +1736,6 @@
       title: "스킨퓨어 라인업",
       tone: "pink",
       products: [
-        { label: "👉스킨퓨어1300", quantity: "qty1300", size: "130cm × 130cm × 2.5cm", unitPrice: 132000 },
         { label: "👉스킨퓨어1200", quantity: "qty1200", size: "120cmx120cmx2.4cm", regularPrice: 134000, eventPrice: 118000 },
         { label: "👉스킨퓨어600", quantity: "qty600", size: "60cmx60cmx2.2cm", regularPrice: 28000, eventPrice: 26000 },
       ],
@@ -1972,7 +1966,6 @@ ${CASA_FREE_SERVICE_LINE}
     const areasPreset = $("areasPreset").value;
     const areasCustom = $("areasCustom").value.trim();
 
-    const qty1300 = safeNum($("qty1300").value);
     const qty1200 = safeNum($("qty1200").value);
     const qty600 = safeNum($("qty600").value);
 
@@ -1996,7 +1989,7 @@ ${CASA_FREE_SERVICE_LINE}
     return {
       customerName, phone, siteName,
       pyeongType, extension, areasPreset, areasCustom,
-      qty1300, qty1200, qty600,
+      qty1200, qty600,
       optRooms, rooms,
       optReview,
       optCasaRefurb,
@@ -2290,7 +2283,7 @@ ${noticeBody}`.trim();
     if (blocks.length === 0) {
       blocks.push(`
         <section class="q-section">
-          <div class="q-empty">600, 1200, 1300 중 장수를 입력하면 견적 카드가 표시됩니다.</div>
+          <div class="q-empty">1200 또는 600 장수를 입력하면 견적 카드가 표시됩니다.</div>
         </section>`);
     }
 
@@ -2934,7 +2927,6 @@ ${noticeBody}`.trim();
     $("areasPreset").value = "";
     $("areasCustom").value = "";
 
-    $("qty1300").value = "";
     $("qty1200").value = "";
     $("qty600").value = "";
 
@@ -2982,7 +2974,6 @@ ${noticeBody}`.trim();
   $("btnTplCasa").addEventListener("click", () => setTemplate("casa"));
 
   $("qty1200").addEventListener("input", () => { update600Hint(); generate(); });
-  $("qty1300").addEventListener("input", generate);
   $("qty600").addEventListener("input", generate);
   ["customerName", "phone", "siteName", "pyeongType"].forEach((id) => {
     $(id)?.addEventListener("input", generate);
