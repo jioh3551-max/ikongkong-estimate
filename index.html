@@ -155,7 +155,7 @@
 
     .qty-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .template-casa #qty1300Field { display:none; }
-    .qty-grid > div:first-child .hint { display:none; }
+    #qty1200 + .hint { display:none; }
     @media (max-width: 720px){ .qty-grid { grid-template-columns: 1fr; } }
 
     .option-row{
@@ -501,7 +501,7 @@
     .q-card-total.pink { background: linear-gradient(90deg, #ff9ab5, #f47b9e); }
     .q-refurb-layout {
       display:grid;
-      grid-template-columns: 1.08fr 1fr 1fr .9fr;
+      grid-template-columns: 1fr 140px;
       gap: 20px;
       align-items:stretch;
     }
@@ -525,11 +525,11 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      min-height: 232px;
+      min-height: 100px;
       position: relative;
     }
     .q-mascot img {
-      width: 180px;
+      width: 100px;
       max-width: 100%;
       opacity: .95;
     }
@@ -1615,6 +1615,10 @@
     <div class="card">
       <h2>장수 입력</h2>
       <div class="qty-grid">
+        <div id="qty1300Field">
+          <label for="qty1300">1300 장수</label>
+          <input id="qty1300" type="number" min="0" step="0.5" placeholder="0" />
+        </div>
         <div>
           <label>1200 장수</label>
           <input id="qty1200" type="number" min="0" step="0.5" placeholder="0" />
@@ -1625,10 +1629,6 @@
           <label>600 장수</label>
           <input id="qty600" type="number" min="0" step="1" placeholder="0" />
           <div id="hint600" class="hint" style="color:#999;">예상 600장수(1200×4): -</div>
-        </div>
-        <div id="qty1300Field">
-          <label for="qty1300">스킨퓨어1300 장수</label>
-          <input id="qty1300" type="number" min="0" step="0.5" placeholder="0" />
         </div>
       </div>
 
@@ -1728,17 +1728,28 @@
   // 1) 프리셋 / 고정문구
   // =========================
 
-  const IKONG_600 = [
-    { label: "👉프리미엄600", size: "60cmx60cmx2.2cm", regularPrice: 25000, eventPrice: 23000 },
-    { label: "👉스킨퓨어600", size: "60cmx60cmx2.2cm", regularPrice: 28000, eventPrice: 26000 },
+  const IKONG_LINEUPS = [
+    {
+      title: "프리미엄 라인업",
+      tone: "teal",
+      products: [
+        { label: "👉프리미엄1200", quantity: "qty1200", size: "120cmx120cmx2.4cm", regularPrice: 124000, eventPrice: 108000 },
+        { label: "👉프리미엄600", quantity: "qty600", size: "60cmx60cmx2.2cm", regularPrice: 25000, eventPrice: 23000 },
+        { label: "👉프리미엄1200(리퍼브)", quantity: "qty1200", size: "120cmx120cmx2.4cm", regularPrice: 104000, eventPrice: 98000 },
+      ],
+    },
+    {
+      title: "스킨퓨어 라인업",
+      tone: "pink",
+      products: [
+        { label: "👉스킨퓨어1300", quantity: "qty1300", size: "130cm × 130cm × 2.5cm", unitPrice: 132000 },
+        { label: "👉스킨퓨어1200", quantity: "qty1200", size: "120cmx120cmx2.4cm", regularPrice: 134000, eventPrice: 118000 },
+        { label: "👉스킨퓨어600", quantity: "qty600", size: "60cmx60cmx2.2cm", regularPrice: 28000, eventPrice: 26000 },
+        { label: "👉스킨퓨어1200(리퍼브)", quantity: "qty1200", size: "120cmx120cmx2.4cm", regularPrice: 114000, eventPrice: 107000 },
+      ],
+    },
   ];
-
-  const IKONG_1200_PREMIUM = [
-    { label: "👉프리미엄1200", size: "120cmx120cmx2.4cm", regularPrice: 124000, eventPrice: 108000 },
-    { label: "👉스킨퓨어1200", size: "120cmx120cmx2.4cm", regularPrice: 134000, eventPrice: 118000 },
-  ];
-
-  const IKONG_1300 = { label: "👉스킨퓨어1300", size: "130cm × 130cm × 2.5cm", unitPrice: 132000 };
+  const IKONG_600 = IKONG_LINEUPS.flatMap(lineup => lineup.products.filter(p => p.quantity === "qty600"));
 
   const IKONG_REFURB_DESC =
 `리퍼브란? 생산과정에
@@ -1749,11 +1760,6 @@ A급과 동일하지만 미관상 단점이
 존재하는 제품입니다. 제품의
 하자가 미리 존재하기에 무상
 A/S가 적용되지 않는 상품입니다`;
-
-  const IKONG_1200_REFURB = [
-    { label: "👉프리미엄1200(리퍼브)", size: "120cmx120cmx2.4cm", regularPrice: 104000, eventPrice:  98000 },
-    { label: "👉스킨퓨어1200(리퍼브)", size: "120cmx120cmx2.4cm", regularPrice: 114000, eventPrice: 107000 },
-  ];
 
   const IKONG_INTRO =
 `💎아이콩콩매트는 독일 3사로 불리는 벤츠, 아우디, BMW 등에 최고급 원료를 납품하는 국내 원료사의 프리미엄 소재를 공급받아 생산된 층간소음매트입니다.
@@ -1999,8 +2005,24 @@ ${CASA_FREE_SERVICE_LINE}
   let casaPlanImageSrc = "";
   let casaPlanImageLoadToken = 0;
 
+  function ikongQuoteLineups(data) {
+    return IKONG_LINEUPS.map(lineup => ({
+      ...lineup,
+      products: lineup.products.filter(product => data[product.quantity] > 0),
+    })).filter(lineup => lineup.products.length > 0);
+  }
+
+  function ikongProductText(product, qty) {
+    const unitPrice = product.unitPrice ?? product.eventPrice;
+    const priceLines = product.regularPrice == null
+      ? [`❃장당: ${formatWon(unitPrice)}`]
+      : [`❃장당: ${strikeText(formatWon(product.regularPrice))}`, `❃이벤트가: ${formatWon(unitPrice)}`];
+    return [product.label, product.size, ...priceLines,
+      `❃예상수량: ${formatQty(qty)}`, `❃총금액: ${formatWon(qty * unitPrice)}`].join("\n");
+  }
+
   function buildIkongkong(data) {
-    const { customerName,phone,siteName, pyeongType, extension, areasPreset, areasCustom, qty1300, qty1200, qty600 } = data;
+    const { customerName,phone,siteName, pyeongType, extension, areasPreset, areasCustom } = data;
     const areasValue = getAreasValue(areasPreset, areasCustom);
 
     const header =
@@ -2014,80 +2036,17 @@ ${CASA_FREE_SERVICE_LINE}
 ✿박람회행사가 프로모션적용`.trim();
 
     const lines = [];
-    lines.push(`[프리미엄 라인업]`);
-
-    if (qty600 > 0) {
-      for (const p of IKONG_600) {
-        const total = qty600 * p.eventPrice;
-        lines.push(
-`${p.label}
-${p.size}
-❃장당: ${strikeText(formatWon(p.regularPrice))}
-❃이벤트가: ${formatWon(p.eventPrice)}
-❃예상수량: ${formatQty(qty600)}
-❃총금액: ${formatWon(total)}`
-        );
+    for (const lineup of ikongQuoteLineups(data)) {
+      lines.push(`[${lineup.title}]`);
+      for (const product of lineup.products) {
+        lines.push(ikongProductText(product, data[product.quantity]));
       }
     }
+    if (data.qty1200 > 0) lines.push(IKONG_REFURB_DESC);
 
-    if (qty1200 > 0) {
-      for (const p of IKONG_1200_PREMIUM) {
-        const total = qty1200 * p.eventPrice;
-        lines.push(
-`${p.label}
-${p.size}
-❃장당: ${strikeText(formatWon(p.regularPrice))}
-❃이벤트가: ${formatWon(p.eventPrice)}
-❃예상수량: ${formatQty(qty1200)}
-❃총금액: ${formatWon(total)}`
-        );
-      }
-    }
-
-    if (qty1300 > 0) {
-      lines.push(
-`${IKONG_1300.label}
-${IKONG_1300.size}
-❃장당: ${formatWon(IKONG_1300.unitPrice)}
-❃예상수량: ${formatQty(qty1300)}
-❃총금액: ${formatWon(qty1300 * IKONG_1300.unitPrice)}`
-      );
-    }
-
-    if (qty1200 > 0) {
-      lines.push(`[리퍼브 라인업]`);
-      lines.push(IKONG_REFURB_DESC);
-
-      for (const p of IKONG_1200_REFURB) {
-        const total = qty1200 * p.eventPrice;
-        lines.push(
-`${p.label}
-${p.size}
-❃장당: ${strikeText(formatWon(p.regularPrice))}
-❃이벤트가: ${formatWon(p.eventPrice)}
-❃예상수량: ${formatQty(qty1200)}
-❃총금액: ${formatWon(total)}`
-        );
-      }
-    }
-
-    if (data.optRooms && Array.isArray(data.rooms) && data.rooms.length > 0) {
-      for (const room of data.rooms) {
-        lines.push(``);
-        lines.push(`-방(${room.name})`);
-
-        for (const p of IKONG_600) {
-          const total = room.qty * p.eventPrice;
-          lines.push(
-`${p.label}
-${p.size}
-❃장당: ${strikeText(formatWon(p.regularPrice))}
-❃이벤트가: ${formatWon(p.eventPrice)}
-❃예상수량: ${formatQty(room.qty)}
-❃총금액: ${formatWon(total)}`
-          );
-        }
-      }
+    for (const room of data.rooms) {
+      lines.push(`-방(${room.name})`);
+      lines.push(...IKONG_600.map(product => ikongProductText(product, room.qty)));
     }
 
     const body = lines.join("\n\n");
@@ -2301,32 +2260,22 @@ ${noticeBody}`.trim();
   }
 
   function renderLineupsVisual(data) {
-    const blocks = [];
-
-    const premiumCards = [];
-    if (data.qty600 > 0) premiumCards.push(...IKONG_600.map(p => quoteProductCard(p, data.qty600, "teal")));
-    if (data.qty1200 > 0) premiumCards.push(...IKONG_1200_PREMIUM.map(p => quoteProductCard(p, data.qty1200, "teal")));
-
-    if (data.qty1300 > 0) premiumCards.push(quoteProductCard(IKONG_1300, data.qty1300));
-
-    if (premiumCards.length > 0) {
-      blocks.push(`
-        <section class="q-section q-line-section">
-          <div class="q-line-badge">★ 프리미엄 라인업</div>
-          <div class="q-product-grid">${premiumCards.join("")}</div>
-        </section>`);
-    }
+    const blocks = ikongQuoteLineups(data).map(lineup => `
+      <section class="q-section q-line-section">
+        <div class="q-line-badge ${lineup.tone}">★ ${lineup.title}</div>
+        <div class="q-product-grid">
+          ${lineup.products.map(product => quoteProductCard(product, data[product.quantity], lineup.tone)).join("")}
+        </div>
+      </section>`);
 
     if (data.qty1200 > 0) {
       blocks.push(`
-        <section class="q-section q-line-section">
-          <div class="q-line-badge pink">★ 리퍼브 라인업</div>
+        <section class="q-section">
           <div class="q-refurb-layout">
             <div class="q-refurb-desc">
               <b>리퍼브란?</b>
               생산 과정에 찍힘, 눌림, 색상 차이, 스크래치 등이 일부 발생한 새제품입니다. 기능 효율은 A급과 동일하지만 미관상 단점이 있어 무상 A/S가 적용되지 않습니다.
             </div>
-            ${IKONG_1200_REFURB.map(p => quoteProductCard(p, data.qty1200, "pink")).join("")}
             <div class="q-mascot"><img src="./assets/ikongkong-icon.png" alt="" /></div>
           </div>
         </section>`);
